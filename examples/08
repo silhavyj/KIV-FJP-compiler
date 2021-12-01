@@ -1,0 +1,26 @@
+START
+int iterations;
+
+function foo() {
+    int x, y, z;
+    {
+        z := 2;
+        loop:
+        for (x := 10; x < 13; x := x + 1) {
+            write(x);
+            for (y := 1; y <= 5; y := y + 1)
+                write(y);
+        }
+        z := z - 1;
+        if (z > 0)
+            goto loop;
+    }
+}
+{
+   iterations := 2;
+   do {{
+     call foo();
+     iterations := iterations - 1;
+   }} while (iterations > 0);
+}
+END

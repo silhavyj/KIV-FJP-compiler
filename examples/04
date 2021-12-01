@@ -1,0 +1,27 @@
+START
+int x;
+
+function fibonacci() {
+    int a, b, c;
+    {
+        a := 1;
+        b := 1;
+
+        if (x > 0) write(1);
+        if (x > 1) write(1);
+        if (x > 2)
+            do {{
+                c := a + b;
+                write(c);
+                a := b;
+                b := c;
+                x := x - 1;
+            }} while (x > 2);
+    }
+}
+
+{
+    read(x);
+    call fibonacci();
+}
+END

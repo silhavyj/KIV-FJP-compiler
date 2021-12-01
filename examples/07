@@ -1,0 +1,6 @@
+START
+{
+    goto exit;
+    exit:
+}
+END

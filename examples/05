@@ -1,0 +1,10 @@
+START
+int x;
+{
+    x := (x instanceof function) + 15;
+    write(x);
+    if (x instanceof int == true) {
+        write(x);
+    }
+}
+END

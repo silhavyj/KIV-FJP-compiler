@@ -1,0 +1,24 @@
+START
+
+const int N = 3;
+bool arr2[N] = { true, false,true };
+int i;
+
+function test() {
+    int j, arr[3] = {10,11,12};
+    {
+        for (j := 1; j < 4; j := j + 1)
+            write(arr[j-1]);
+
+        for (i := 0; i < N; i := i + 1)
+            write(arr2[i]);
+    }
+}
+
+{
+
+    for (i := 0; i < N; i := i + 1)
+        write(arr2[i]);
+    call test();
+}
+END

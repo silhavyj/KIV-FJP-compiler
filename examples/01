@@ -1,0 +1,25 @@
+START
+int n, f;
+
+function fact() {
+    int ans;
+    {
+        ans := n;
+        n := n - 1;
+        if (n < 0) {
+            f := -1;
+        } else if (n == 0) {
+            f := 1;
+        }
+        else {
+            call fact();
+        }
+        f := f * ans;
+    }
+}
+{
+    read(n);
+    call fact();
+    write(f);
+}
+END

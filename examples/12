@@ -1,0 +1,17 @@
+START
+const int N = 3;
+function test() {
+    bool arr[N];
+    int i;
+    {
+        for (i := 1; i <= N; i := i + 1)
+            read(arr[i-1]);
+
+        for (i := 0; i < N; i := i + 1)
+            write(arr[i]);
+    }
+}
+{
+    call test();
+}
+END
