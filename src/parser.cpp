@@ -738,6 +738,21 @@ void FJP::Parser::processFactor() {
                     case FJP::SymbolType::SYMBOL_CONST:
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.value});
                         break;
+                    case FJP::SymbolType::SYMBOL_INT_ARRAY:
+                    case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
+                        if (token.tokenType != FJP::TokenType::LEFT_SQUARED_BRACKET) {
+                            FJP::exitProgramWithError("missing [", ERR_CODE, token.lineNumber);
+                        }
+                        token = lexer->getNextToken();
+                        processExpression();
+                        generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.address});
+                        generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS});
+                        generatedCode.addInstruction({FJP::OP_CODE::LDA, symbolTable.getDepthLevel() - symbol.level, 0});
+                        if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
+                            FJP::exitProgramWithError("missing ]", ERR_CODE, token.lineNumber);
+                        }
+                        token = lexer->getNextToken();
+                        break;
                     default:
                         FJP::exitProgramWithError("invalid identifier", ERR_CODE, token.lineNumber);
                         break;
