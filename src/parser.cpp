@@ -331,7 +331,60 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
         return;
     }
 
-    if (!(variable.symbolType == FJP::SymbolType::SYMBOL_INT || variable.symbolType == FJP::SymbolType::SYMBOL_BOOL)) {
+    switch (variable.symbolType) {
+        case FJP::SymbolType::SYMBOL_INT:
+        case FJP::SymbolType::SYMBOL_BOOL:
+            token = lexer->getNextToken();
+            if (token.tokenType != FJP::TokenType::ASSIGN) {
+                FJP::exitProgramWithError(":= expected", ERR_CODE, token.lineNumber);
+            }
+            token = lexer->getNextToken();
+            processExpression();
+
+            if (variable.symbolType == FJP::SymbolType::SYMBOL_BOOL) {
+                generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0 });
+                generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
+            }
+            generatedCode.addInstruction({ FJP::OP_CODE::STO, symbolTable.getDepthLevel() - variable.level, variable.address });
+            break;
+        case FJP::SymbolType::SYMBOL_INT_ARRAY:
+        case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
+            token = lexer->getNextToken();
+            if (token.tokenType != FJP::TokenType::LEFT_SQUARED_BRACKET) {
+                FJP::exitProgramWithError("[ expected", ERR_CODE, token.lineNumber);
+            }
+            token = lexer->getNextToken();
+            processExpression();
+            generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, variable.address });
+            generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS });
+            if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
+                FJP::exitProgramWithError("] expected", ERR_CODE, token.lineNumber);
+            }
+            token = lexer->getNextToken();
+            if (token.tokenType != FJP::TokenType::ASSIGN) {
+                FJP::exitProgramWithError(":= expected", ERR_CODE, token.lineNumber);
+            }
+            token = lexer->getNextToken();
+            processExpression();
+            if (variable.symbolType == FJP::SymbolType::SYMBOL_BOOL_ARRAY) {
+                generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0 });
+                generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
+            }
+            generatedCode.addInstruction({FJP::OP_CODE::STA, symbolTable.getDepthLevel() - variable.level, 0});
+            break;
+        default:
+            FJP::exitProgramWithError("variable type expected", ERR_CODE, token.lineNumber);
+            break;
+    }
+
+    if (expectSemicolon == true) {
+        if (token.tokenType != FJP::TokenType::SEMICOLON) {
+            FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
+        }
+        token = lexer->getNextToken();
+    }
+
+    /* if (!(variable.symbolType == FJP::SymbolType::SYMBOL_INT || variable.symbolType == FJP::SymbolType::SYMBOL_BOOL)) {
         FJP::exitProgramWithError("variable type expected", ERR_CODE, token.lineNumber);
     }
 
@@ -354,7 +407,9 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
             FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
         }
         token = lexer->getNextToken();
-    }
+    } */
+
+
 }
 
 void FJP::Parser::processLabel(const std::string label) {
