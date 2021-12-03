@@ -55,6 +55,7 @@ namespace FJP {
         INSTANCEOF,
         START,
         UNKNOWN,
+        FOREACH,
         END
     };
 
@@ -72,6 +73,7 @@ namespace FJP {
         { "START",     TokenType::START                 },
         { "END",       TokenType::END                   },
         { "write",     TokenType::WRITE                 },
+        { "foreach",   TokenType::FOREACH               },
         { "else",      TokenType::ELSE                  },
         { "read",      TokenType::READ                  },
         { "goto",      TokenType::GOTO                  },

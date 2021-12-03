@@ -24,6 +24,8 @@ std::string FJP::op_code_to_str(OP_CODE op) {
             return "LDA";
         case STA:
             return "STA";
+        case DEC:
+            return "DEC";
     }
     return "unknown";
 }

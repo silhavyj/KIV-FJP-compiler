@@ -71,11 +71,11 @@ void FJP::Parser::processBlock() {
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
 
     processFunction();
-
-    generatedCode[incInstructionAddress].m = frameVariableCount;
     generatedCode[jmpAddress].m = generatedCode.getSize();
+    generatedCode[incInstructionAddress].m = frameVariableCount;
 
     processStatement();
+
 
     arSize -= FRAME_INIT_VAR_COUNT;
     symbolTable.destroyFrame();
@@ -315,6 +315,7 @@ void FJP::Parser::processStatement() {
     processWhile();
     processDoWhile();
     processFor();
+    processForeach();
     processGoto();
     processRead();
     processWrite();
@@ -383,33 +384,6 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
         }
         token = lexer->getNextToken();
     }
-
-    /* if (!(variable.symbolType == FJP::SymbolType::SYMBOL_INT || variable.symbolType == FJP::SymbolType::SYMBOL_BOOL)) {
-        FJP::exitProgramWithError("variable type expected", ERR_CODE, token.lineNumber);
-    }
-
-    token = lexer->getNextToken();
-    if (token.tokenType != FJP::TokenType::ASSIGN) {
-        FJP::exitProgramWithError(":= expected", ERR_CODE, token.lineNumber);
-    }
-
-    token = lexer->getNextToken();
-    processExpression();
-
-    if (variable.symbolType == FJP::SymbolType::SYMBOL_BOOL) {
-        generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0 });
-        generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
-    }
-    generatedCode.addInstruction({ FJP::OP_CODE::STO, symbolTable.getDepthLevel() - variable.level, variable.address });
-
-    if (expectSemicolon == true) {
-        if (token.tokenType != FJP::TokenType::SEMICOLON) {
-            FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
-        }
-        token = lexer->getNextToken();
-    } */
-
-
 }
 
 void FJP::Parser::processLabel(const std::string label) {
@@ -577,6 +551,94 @@ void FJP::Parser::processDoWhile() {
         FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
+}
+
+void FJP::Parser::processForeach() {
+    if (token.tokenType != FJP::TokenType::FOREACH) {
+        return;
+    }
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
+        FJP::exitProgramWithError("missing (", ERR_CODE, token.lineNumber);
+    }
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::IDENTIFIER) {
+        FJP::exitProgramWithError("missing identifier", ERR_CODE, token.lineNumber);
+    }
+    FJP::Symbol iterVariable = symbolTable.findSymbol(token.value);
+    if (iterVariable.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
+        FJP::exitProgramWithError("identifier not found", ERR_CODE, token.lineNumber);
+    }
+    switch (iterVariable.symbolType) {
+        case FJP::SymbolType::SYMBOL_INT:
+        case FJP::SymbolType::SYMBOL_BOOL:
+            break;
+        default:
+            FJP::exitProgramWithError("invalid iterator type", ERR_CODE, token.lineNumber);
+    }
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::COLON) {
+        FJP::exitProgramWithError("foreach - missing :", ERR_CODE, token.lineNumber);
+    }
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::IDENTIFIER) {
+        FJP::exitProgramWithError("missing identifier", ERR_CODE, token.lineNumber);
+    }
+    FJP::Symbol dataArray = symbolTable.findSymbol(token.value);
+    if (dataArray.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
+        FJP::exitProgramWithError("array not found", ERR_CODE, token.lineNumber);
+    }
+
+    switch (iterVariable.symbolType) {
+        case FJP::SymbolType::SYMBOL_INT:
+            if (dataArray.symbolType != FJP::SymbolType::SYMBOL_INT_ARRAY) {
+                FJP::exitProgramWithError("the iterator and the array have to be the same type", ERR_CODE, token.lineNumber);
+            }
+            break;
+        case FJP::SymbolType::SYMBOL_BOOL:
+            if (dataArray.symbolType != FJP::SymbolType::SYMBOL_BOOL_ARRAY) {
+                FJP::exitProgramWithError("the iterator and the array have to be the same type", ERR_CODE, token.lineNumber);
+            }
+            break;
+        default:
+            break;
+    }
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
+        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+    }
+    token = lexer->getNextToken();
+
+    int indexAddress = arSize;
+    generatedCode.addInstruction({FJP::OP_CODE::INC, 0, 1});
+
+    generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
+    generatedCode.addInstruction({FJP::OP_CODE::STO, 0, indexAddress});
+
+    int startForeachBody = generatedCode.getSize();
+    generatedCode.addInstruction({FJP::OP_CODE::LOD, 0, indexAddress});
+    generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, dataArray.size});
+    generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ});
+
+    int exitForeachAddress = generatedCode.getSize();
+    generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, 0});
+
+    generatedCode.addInstruction({FJP::OP_CODE::LOD, 0, indexAddress});
+    generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, dataArray.address});
+    generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS});
+    generatedCode.addInstruction({FJP::OP_CODE::LDA, symbolTable.getDepthLevel() - dataArray.level, 0});
+    generatedCode.addInstruction({FJP::OP_CODE::STO, symbolTable.getDepthLevel() - iterVariable.level, iterVariable.address});
+
+    generatedCode.addInstruction({FJP::OP_CODE::LOD, 0, indexAddress});
+    generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 1});
+    generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS});
+    generatedCode.addInstruction({FJP::OP_CODE::STO, 0, indexAddress});
+
+    processStatement();
+    generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, startForeachBody});
+
+    generatedCode[exitForeachAddress].m = generatedCode.getSize();
+    generatedCode.addInstruction({FJP::OP_CODE::DEC, 0, 1});
 }
 
 void FJP::Parser::processFor() {

@@ -11,6 +11,7 @@ namespace FJP {
         STO,
         CAL,
         INC,
+        DEC,
         JMP,
         JPC,
         SIO,

@@ -49,6 +49,7 @@ namespace FJP {
         void execute_SIO(int l, int m);
         void execute_LDA(int l, int m);
         void execute_STA(int l, int m);
+        void execute_DEC(int l, int m);
 
         bool checkIfOverflows(std::function<int(int, int)> operation, int x, int y);
 

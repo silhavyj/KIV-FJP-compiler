@@ -94,6 +94,9 @@ void FJP::VirtualMachine::execute() {
         case STA:
             execute_STA(instruction.l, instruction.m);
             break;
+        case DEC:
+            execute_DEC(instruction.l, instruction.m);
+            break;
     }
     if (debug) {
         outputFile << PC << "\t" << EBP << "\t" << ESP << "\t";
@@ -231,7 +234,18 @@ void FJP::VirtualMachine::execute_CAL(int l, int m) {
 
 void FJP::VirtualMachine::execute_INC(int l, int m) {
     (void)l;
+    if (m + ESP > STACK_SIZE) {
+        FJP::exitProgramWithError(FJP::RuntimeErrors::ERROR_00, ERROR_CODE);
+    }
     ESP = ESP + m;
+}
+
+void FJP::VirtualMachine::execute_DEC(int l, int m) {
+    (void)l;
+    if (ESP - m < 0) {
+        FJP::exitProgramWithError(FJP::RuntimeErrors::ERROR_00, ERROR_CODE);
+    }
+    ESP = ESP - m;
 }
 
 void FJP::VirtualMachine::execute_JMP(int l, int m) {
