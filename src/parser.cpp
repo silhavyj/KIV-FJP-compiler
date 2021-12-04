@@ -1,6 +1,7 @@
 #include <cassert>
 #include <fstream>
 #include <iomanip>
+#include <list>
 
 #include "logger.h"
 #include "isa.h"
@@ -33,6 +34,13 @@ FJP::GeneratedCode FJP::Parser::parse(FJP::Lexer *lexer, bool debug) {
     processBlock();
     if (token.tokenType != FJP::TokenType::END) {
         FJP::exitProgramWithError("missing END symbol", ERR_CODE, token.lineNumber);
+    }
+
+    for (auto &label : undefinedLabels) {
+        std::string errMsg = "label '";
+        errMsg += label.first;
+        errMsg += "' has not been defined";
+        FJP::exitProgramWithError(errMsg.c_str(), ERR_CODE, token.lineNumber);
     }
 
     if (debug == true) {
@@ -332,7 +340,7 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
         processLabel(token.value);
         return;
     }
-
+    bool isAnotherAssign = true;
     switch (variable.symbolType) {
         case FJP::SymbolType::SYMBOL_INT:
         case FJP::SymbolType::SYMBOL_BOOL:
@@ -341,6 +349,24 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
                 FJP::exitProgramWithError(":= expected", ERR_CODE, token.lineNumber);
             }
             token = lexer->getNextToken();
+            if (token.tokenType == FJP::TokenType::IDENTIFIER) {
+                token = lexer->getNextToken();
+                if (token.tokenType != FJP::TokenType::ASSIGN) {
+                    lexer->returnToPreviousToken();
+                    lexer->returnToPreviousToken();
+                    token = lexer->getNextToken();
+                    isAnotherAssign = false;
+                }
+                if (isAnotherAssign) {
+                    processAssignment();
+                    generatedCode.addInstruction({FJP::OP_CODE::LOD, lastProcessVariable.level, lastProcessVariable.address});
+                    if (variable.symbolType == FJP::SymbolType::SYMBOL_BOOL) {
+                        generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0 });
+                        generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
+                    }
+                    generatedCode.addInstruction({ FJP::OP_CODE::STO, symbolTable.getDepthLevel() - variable.level, variable.address });
+                }
+            }
             processExpression();
 
             if (variable.symbolType == FJP::SymbolType::SYMBOL_BOOL) {
@@ -348,6 +374,7 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
             }
             generatedCode.addInstruction({ FJP::OP_CODE::STO, symbolTable.getDepthLevel() - variable.level, variable.address });
+            lastProcessVariable = variable;
             break;
         case FJP::SymbolType::SYMBOL_INT_ARRAY:
         case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
@@ -379,7 +406,7 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
             break;
     }
 
-    if (expectSemicolon == true) {
+    if (expectSemicolon) {
         if (token.tokenType != FJP::TokenType::SEMICOLON) {
             FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
         }
@@ -875,6 +902,12 @@ void FJP::Parser::processFactor() {
                         break;
                     case FJP::TokenType::BOOL:
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.symbolType == FJP::SYMBOL_BOOL});
+                        break;
+                    case FJP::TokenType::INT_ARRAY:
+                        generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.symbolType == FJP::SYMBOL_INT_ARRAY});
+                        break;
+                    case FJP::TokenType::BOOL_ARRAY:
+                        generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.symbolType == FJP::SYMBOL_BOOL_ARRAY});
                         break;
                     case FJP::TokenType::FUNCTION:
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.symbolType == FJP::SYMBOL_FUNCTION});

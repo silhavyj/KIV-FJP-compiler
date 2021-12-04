@@ -53,6 +53,13 @@ FJP::Token FJP::Lexer::getNextToken() {
     return token;
 }
 
+void FJP::Lexer::returnToPreviousToken() {
+    if (currentTokenIt == tokens.begin()) {
+        FJP::exitProgramWithError(FJP::CompilationErrors::ERROR_05, ERR_CODE);
+    }
+    --currentTokenIt;
+}
+
 void FJP::Lexer::processAllTokens(bool debug) {
     Token token;
     std::stringstream ss;

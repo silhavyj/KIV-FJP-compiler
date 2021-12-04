@@ -26,6 +26,8 @@ namespace FJP {
         FJP::Token token;
         int arSize;
         std::map<std::string, std::list<int>> undefinedLabels;
+        FJP::Symbol lastProcessVariable;
+        bool isLastAssignArrValue = false;
 
     private:
         Parser();

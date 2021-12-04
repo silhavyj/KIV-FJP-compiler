@@ -42,6 +42,7 @@ namespace FJP {
         static Lexer *getInstance();
         void init(std::string filename, bool debug = false);
         FJP::Token getNextToken();
+        void returnToPreviousToken();
         bool isEndOfFile() const;
     };
 }

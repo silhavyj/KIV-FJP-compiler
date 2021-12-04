@@ -1,0 +1,8 @@
+START
+bool a;
+
+{
+    write(a);
+}
+
+END

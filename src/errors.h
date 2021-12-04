@@ -16,6 +16,7 @@ namespace FJP {
         static constexpr const char *ERROR_02 = "number is too long";
         static constexpr const char *ERROR_03 = "identifier is too long";
         static constexpr const char *ERROR_04 = "unknown character";
+        static constexpr const char *ERROR_05 = "no token to return to";
     }
 
     namespace RuntimeErrors {

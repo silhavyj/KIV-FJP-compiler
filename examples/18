@@ -1,0 +1,12 @@
+START
+int a[2];
+bool b;
+
+{
+    goto label;
+    b := a instanceof bool[];
+    label:
+    write(b);
+}
+
+END
