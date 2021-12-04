@@ -49,6 +49,7 @@ namespace FJP {
         void processWhile();
         void processDoWhile();
         void processFor();
+        void processRepeatUntil();
         void processForeach();
         void processLabel(const std::string label);
         void processGoto();

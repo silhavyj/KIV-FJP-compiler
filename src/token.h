@@ -39,6 +39,8 @@ namespace FJP {
         FOR,
         WHILE,
         DO,
+        REPEAT,
+        UNTIL,
         CONST,
         INT,
         BOOL,
@@ -68,6 +70,8 @@ namespace FJP {
     static std::vector<std::pair<std::string, TokenType>> keywords = {
         { "instanceof",TokenType::INSTANCEOF            },
         { "function",  TokenType::FUNCTION              },
+        {"repeat",     TokenType::REPEAT                },
+        {"until",     TokenType::UNTIL                  },
         { "const",     TokenType::CONST                 },
         { "while",     TokenType::WHILE                 },
         { "START",     TokenType::START                 },

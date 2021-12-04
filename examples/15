@@ -1,0 +1,10 @@
+START
+int a;
+a := 0;
+
+repeat {{
+    write(a);
+    a := a + 1;
+}} until(a < 10);
+
+END

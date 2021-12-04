@@ -315,6 +315,7 @@ void FJP::Parser::processStatement() {
     processWhile();
     processDoWhile();
     processFor();
+    processRepeatUntil();
     processForeach();
     processGoto();
     processRead();
@@ -545,6 +546,43 @@ void FJP::Parser::processDoWhile() {
     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
     generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_EQ});
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, doWhileStart });
+
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::SEMICOLON) {
+        FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
+    }
+    token = lexer->getNextToken();
+}
+
+void FJP::Parser::processRepeatUntil() {
+    if (token.tokenType != FJP::TokenType::REPEAT) {
+        return;
+    }
+    int repeatUntilStart = generatedCode.getSize();
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
+        FJP::exitProgramWithError("expected {", ERR_CODE, token.lineNumber);
+    }
+    token = lexer->getNextToken();
+    processStatement();
+
+    if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
+        FJP::exitProgramWithError("expected }", ERR_CODE, token.lineNumber);
+    }
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::UNTIL) {
+        FJP::exitProgramWithError("missing while (repeat-until)", ERR_CODE, token.lineNumber);
+    }
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
+        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+    }
+    token = lexer->getNextToken();
+    processCondition();
+
+    generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
+    generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_EQ});
+    generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, repeatUntilStart });
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
