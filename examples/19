@@ -1,0 +1,24 @@
+START
+int x;
+{
+    x:=0;
+    lbl:
+    switch(x) {
+        case 0:
+            x:=15;
+        case 1:
+            x:=2;
+            break;
+        case 3:
+            x:=5;
+            break;
+        case 15:
+            {
+                x:=3;
+                goto lbl;
+            }
+            break;
+    }
+    write(x);
+}
+END

@@ -325,6 +325,7 @@ void FJP::Parser::processStatement() {
     processFor();
     processRepeatUntil();
     processForeach();
+    processSwitch();
     processGoto();
     processRead();
     processWrite();
@@ -741,6 +742,104 @@ void FJP::Parser::processFor() {
 
     generatedCode[startUpdatePart - 2].m = generatedCode.getSize();
     generatedCode[startUpdatePart - 1].m = endUpdatePart;
+}
+
+void FJP::Parser::processSwitch() {
+    std::list<int> breaks;
+    if (token.tokenType != FJP::TokenType::SWITCH) {
+        return;
+    }
+
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
+        FJP::exitProgramWithError("missing (", ERR_CODE, token.lineNumber);
+    }
+
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::IDENTIFIER) {
+        FJP::exitProgramWithError("missing identifier", ERR_CODE, token.lineNumber);
+    }
+
+    Symbol variable = symbolTable.findSymbol(token.value);
+    if (variable.symbolType == FJP::SYMBOL_NOT_FOUND) {
+        FJP::exitProgramWithError("identifier not found in symbol table", ERR_CODE, token.lineNumber);
+    }
+
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
+        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+    }
+
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
+        FJP::exitProgramWithError("missing {", ERR_CODE, token.lineNumber);
+    }
+
+    token = lexer->getNextToken();
+    processCases(variable, breaks);
+
+    if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
+        FJP::exitProgramWithError("missing }", ERR_CODE, token.lineNumber);
+    }
+
+    for (const auto &item : breaks) {
+        generatedCode[item].m = generatedCode.getSize();
+    }
+
+    token = lexer->getNextToken();
+}
+
+void FJP::Parser::processCases(Symbol &variable, std::list<int> &breaks) {
+    if (token.tokenType != FJP::TokenType::CASE) {
+        return;
+    }
+
+    token = lexer->getNextToken();
+
+    int token_value;
+    if (token.tokenType != FJP::TokenType::NUMBER &&
+        token.tokenType != FJP::TokenType::TRUE &&
+        token.tokenType != FJP::TokenType::FALSE) {
+        FJP::exitProgramWithError("literal expected", ERR_CODE, token.lineNumber);
+    }
+    if (token.tokenType == FJP::TokenType::NUMBER) {
+        token_value = atoi(token.value.c_str());
+    } else {
+        token_value = token.value == "true";
+    }
+    if (((variable.symbolType == SYMBOL_INT) && token.tokenType != NUMBER) ||
+        ((variable.symbolType == SYMBOL_BOOL) && token.tokenType != TRUE) ||
+        ((variable.symbolType == SYMBOL_BOOL) && token.tokenType != FALSE)) {
+        FJP::exitProgramWithError("literals must match up symbol type", ERR_CODE, token.lineNumber);
+    }
+
+    token = lexer->getNextToken();
+    if (token.tokenType != FJP::TokenType::COLON) {
+        FJP::exitProgramWithError("colon expected", ERR_CODE, token.lineNumber);
+    }
+
+    token = lexer->getNextToken();
+
+    generatedCode.addInstruction({FJP::OP_CODE::LOD, symbolTable.getDepthLevel() - variable.level, variable.address});
+    generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, token_value});
+    generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_EQ});
+    int jpc_address = generatedCode.getSize();
+    generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, 0});
+    processStatement();
+    generatedCode[jpc_address].m = generatedCode.getSize();
+
+    if (token.tokenType == FJP::TokenType::BREAK) {
+        breaks.push_back(generatedCode.getSize());
+        generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
+        token = lexer->getNextToken();
+        if (token.tokenType != FJP::TokenType::SEMICOLON) {
+            FJP::exitProgramWithError("semicolon expected", ERR_CODE, token.lineNumber);
+        }
+        token = lexer->getNextToken();
+        generatedCode[jpc_address].m++;
+    }
+
+    processCases(variable, breaks);
 }
 
 void FJP::Parser::processGoto() {
