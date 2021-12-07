@@ -54,6 +54,7 @@ namespace FJP {
         void processRepeatUntil();
         void processForeach();
         void processSwitch();
+        void processTernaryOperator();
         void processCases(Symbol &variable, std::list<int> &breaks);
         void processLabel(const std::string label);
         void processGoto();

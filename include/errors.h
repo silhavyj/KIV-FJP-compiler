@@ -32,6 +32,7 @@ namespace FJP {
         static constexpr const char *ERROR_17 = "missing '['";
         static constexpr const char *ERROR_18 = "missing '{'";
         static constexpr const char *ERROR_19 = "missing '}'";
+        static constexpr const char *ERROR_20 = "missing '?'";
         static constexpr const char *ERROR_21 = "missing '='";
         static constexpr const char *ERROR_22 = "expected variable, number, (, or missing ;";
         static constexpr const char *ERROR_23 = "name of a function expected";

@@ -924,7 +924,36 @@ void FJP::Parser::processCondition() {
     }
 }
 
+void FJP::Parser::processTernaryOperator() {
+    token = lexer->getNextToken();
+    processCondition();
+    if (token.tokenType != FJP::TokenType::QUESTION_MARK) {
+        FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_20, ERR_CODE, token.lineNumber);
+    }
+
+    generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, generatedCode.getSize() + 2});
+    int jmpInstructionAddress = generatedCode.getSize();
+    generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
+    int jmp2InstructionAddress = generatedCode.getSize();
+    generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
+
+    token = lexer->getNextToken();
+    processExpression();
+    if (token.tokenType != FJP::TokenType::COLON) {
+        FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_11, ERR_CODE, token.lineNumber);
+    }
+    generatedCode[jmpInstructionAddress].m = generatedCode.getSize();
+    token = lexer->getNextToken();
+    processExpression();
+    generatedCode[jmp2InstructionAddress].m = generatedCode.getSize();
+}
+
 void FJP::Parser::processExpression() {
+    if (token.tokenType == FJP::TokenType::HASH_MARK) {
+        processTernaryOperator();
+        return;
+    }
+
     FJP::TokenType currTokenType;
 
     if (token.tokenType == FJP::TokenType::PLUS || token.tokenType == FJP::TokenType::MINUS) {

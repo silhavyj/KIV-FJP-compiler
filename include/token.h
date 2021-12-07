@@ -63,6 +63,7 @@ namespace FJP {
         SWITCH,
         CASE,
         BREAK,
+        HASH_MARK,
         END
     };
 
@@ -75,7 +76,7 @@ namespace FJP {
     static std::vector<std::pair<std::string, TokenType>> keywords = {
         {"instanceof",TokenType::INSTANCEOF            },
         {"function",  TokenType::FUNCTION              },
-        {"repeat",     TokenType::REPEAT               },
+        {"repeat",    TokenType::REPEAT                },
         {"until",     TokenType::UNTIL                 },
         {"const",     TokenType::CONST                 },
         {"while",     TokenType::WHILE                 },
@@ -95,8 +96,8 @@ namespace FJP {
         {"false",     TokenType::FALSE                 },
         {"for",       TokenType::FOR                   },
         {"int",       TokenType::INT                   },
-        {"int[]",      TokenType::INT_ARRAY            },
-        {"bool[]",     TokenType::BOOL_ARRAY           },
+        {"int[]",     TokenType::INT_ARRAY             },
+        {"bool[]",    TokenType::BOOL_ARRAY            },
         {"if",        TokenType::IF                    },
         {"do",        TokenType::DO                    },
         {":=",        TokenType::ASSIGN                },
@@ -124,7 +125,8 @@ namespace FJP {
         {",",         TokenType::COMMA                 },
         {".",         TokenType::PERIOD                },
         {"!",         TokenType::EXCLAMATION_MARK      },
-        {"?",         TokenType::QUESTION_MARK         }
+        {"?",         TokenType::QUESTION_MARK         },
+        {"#",         TokenType::HASH_MARK             }
     };
 
     std::ostream &operator<<(std::ostream &out, const Token &token);
