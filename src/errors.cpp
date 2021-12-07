@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "errors.h"
+#include <errors.h>
 
 void FJP::exitProgramWithError(const char *errMsg, int errCode) {
     std::cout << errMsg << std::endl;

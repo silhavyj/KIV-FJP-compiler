@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include "symbol_table.h"
+#include <symbol_table.h>
 
 bool FJP::Symbol::operator==(const FJP::Symbol &other) const {
     return this->name == other.name;

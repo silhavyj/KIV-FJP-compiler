@@ -1,6 +1,6 @@
 TARGET = fjp
 CCX    = g++
-FLAGS  = -Wall -O2 -std=c++17 -pedantic-errors -Wextra -Werror
+FLAGS  = -Wall -O2 -std=c++17 -pedantic-errors -Wextra -Werror -Iinclude -Ilib
 SRC    = src
 BIN    = bin
 SOURCE = $(wildcard $(SRC)/*.cpp) 

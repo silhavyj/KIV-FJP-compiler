@@ -1,8 +1,8 @@
 #include <cstring>
 #include <iostream>
 
-#include "vm.h"
-#include "errors.h"
+#include <vm.h>
+#include <errors.h>
 
 FJP::VirtualMachine *FJP::VirtualMachine::instance = nullptr;
 

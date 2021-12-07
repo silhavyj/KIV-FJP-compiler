@@ -1,6 +1,6 @@
 #include <algorithm>
 
-#include "token.h"
+#include <token.h>
 
 std::ostream &FJP::operator<<(std::ostream &out, const FJP::Token &token) {
     out << "{\n";

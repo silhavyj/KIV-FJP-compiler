@@ -2,9 +2,9 @@
 #include <fstream>
 #include <sstream>
 
-#include "lexer.h"
-#include "errors.h"
-#include "logger.h"
+#include <lexer.h>
+#include <errors.h>
+#include <logger.h>
 
 static int is_part_of_identifier(int c);
 static int is_start_of_identifier(int c);

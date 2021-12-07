@@ -1,12 +1,12 @@
 #include <iostream>
 
-#include "../lib/cxxopts.hpp"
+#include <cxxopts.hpp>
 
-#include "vm.h"
-#include "errors.h"
-#include "lexer.h"
-#include "parser.h"
-#include "logger.h"
+#include <vm.h>
+#include <errors.h>
+#include <lexer.h>
+#include <parser.h>
+#include <logger.h>
 
 int main(int argc, char *argv[]) {
     cxxopts::ParseResult arg;

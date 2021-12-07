@@ -3,10 +3,10 @@
 #include <iomanip>
 #include <list>
 
-#include "logger.h"
-#include "isa.h"
-#include "parser.h"
-#include "errors.h"
+#include <logger.h>
+#include <isa.h>
+#include <parser.h>
+#include <errors.h>
 
 FJP::Parser *FJP::Parser::instance = nullptr;
 

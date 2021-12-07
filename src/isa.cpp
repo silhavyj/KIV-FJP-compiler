@@ -1,4 +1,4 @@
-#include "isa.h"
+#include <isa.h>
 
 std::string FJP::op_code_to_str(OP_CODE op) {
     switch (op) {
