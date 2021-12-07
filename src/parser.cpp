@@ -808,8 +808,7 @@ void FJP::Parser::processCases(Symbol &variable, std::list<int> &breaks) {
         token_value = token.value == "true";
     }
     if (((variable.symbolType == SYMBOL_INT) && token.tokenType != NUMBER) ||
-        ((variable.symbolType == SYMBOL_BOOL) && token.tokenType != TRUE) ||
-        ((variable.symbolType == SYMBOL_BOOL) && token.tokenType != FALSE)) {
+        ((variable.symbolType == SYMBOL_BOOL) && !(token.tokenType == TRUE || token.tokenType == FALSE))) {
         FJP::exitProgramWithError("literals must match up symbol type", ERR_CODE, token.lineNumber);
     }
 
