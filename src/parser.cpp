@@ -11,7 +11,7 @@
 FJP::Parser *FJP::Parser::instance = nullptr;
 
 FJP::Parser* FJP::Parser::getInstance() {
-    if (instance == NULL) {
+    if (instance == nullptr) {
         instance = new Parser;
     }
     return instance;
