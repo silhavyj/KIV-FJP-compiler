@@ -28,19 +28,19 @@ FJP::GeneratedCode FJP::Parser::parse(FJP::Lexer *lexer, bool debug) {
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::START) {
-        FJP::exitProgramWithError("missing START symbol", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing START symbol", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     processBlock();
     if (token.tokenType != FJP::TokenType::END) {
-        FJP::exitProgramWithError("missing END symbol", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing END symbol", ERR_CODE, token.lineNumber);
     }
 
     for (auto &label : undefinedLabels) {
         std::string errMsg = "label '";
         errMsg += label.first;
         errMsg += "' has not been defined";
-        FJP::exitProgramWithError(errMsg.c_str(), ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, errMsg.c_str(), ERR_CODE, token.lineNumber);
     }
 
     if (debug == true) {
@@ -99,24 +99,24 @@ void FJP::Parser::processConst() {
         FJP::TokenType dataType = token.tokenType;
 
         if (!(dataType == FJP::TokenType::INT || dataType == FJP::TokenType::BOOL)) {
-            FJP::exitProgramWithError("invalid datatype", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "invalid datatype", ERR_CODE, token.lineNumber);
         }
 
         while (true) {
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::IDENTIFIER) {
-                FJP::exitProgramWithError("missing identifier", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "missing identifier", ERR_CODE, token.lineNumber);
                 return;
             }
             identifier = token.value;
             if (symbolTable.existsSymbol(identifier) == true) {
-                FJP::exitProgramWithError("token name is already taken", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "token name is already taken", ERR_CODE, token.lineNumber);
                 return;
             }
 
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::INIT_SIGN) {
-                FJP::exitProgramWithError("missing '='", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "missing '='", ERR_CODE, token.lineNumber);
                 return;
             }
             token = lexer->getNextToken();
@@ -124,14 +124,14 @@ void FJP::Parser::processConst() {
             switch (dataType) {
                 case FJP::TokenType::INT:
                     if (token.tokenType != FJP::TokenType::NUMBER) {
-                        FJP::exitProgramWithError("a number expected", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "a number expected", ERR_CODE, token.lineNumber);
                     }
                     value = atoi(token.value.c_str());
                     symbolTable.addSymbol({FJP::SymbolType::SYMBOL_CONST, identifier, value, 0, 0, 0});
                     break;
                 case FJP::TokenType::BOOL:
                     if (!(token.tokenType == FJP::TokenType::TRUE || token.tokenType == FJP::TokenType::FALSE)) {
-                        FJP::exitProgramWithError("a true/false value expected", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "a true/false value expected", ERR_CODE, token.lineNumber);
                     }
                     symbolTable.addSymbol({FJP::SymbolType::SYMBOL_CONST, identifier, token.tokenType == FJP::TokenType::TRUE, 0, 0, 0});
                     break;
@@ -143,7 +143,7 @@ void FJP::Parser::processConst() {
                 break;
         }
         if (token.tokenType != FJP::TokenType::SEMICOLON) {
-            FJP::exitProgramWithError("missing ';'", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "missing ';'", ERR_CODE, token.lineNumber);
         }
         token = lexer->getNextToken();
     }
@@ -166,11 +166,11 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
     while (true) {
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::IDENTIFIER) {
-            FJP::exitProgramWithError("missing identifier", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "missing identifier", ERR_CODE, token.lineNumber);
         }
         identifier = token.value;
         if (symbolTable.existsSymbol(identifier) ==  true) {
-            FJP::exitProgramWithError("token name is already taken", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "token name is already taken", ERR_CODE, token.lineNumber);
         }
 
         switch (dataType) {
@@ -196,7 +196,7 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
                 case FJP::TokenType::NUMBER:
                     arraySize = atoi(token.value.c_str());
                     if (arraySize <= 0) {
-                        FJP::exitProgramWithError("size has to be >= 1", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "size has to be >= 1", ERR_CODE, token.lineNumber);
                     }
                     arSize += (arraySize - 1);
                     frameVariableCount += (arraySize - 1);
@@ -205,13 +205,13 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
                 case FJP::TokenType::IDENTIFIER:
                     symbol = symbolTable.findSymbol(token.value);
                     if (symbol.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
-                        FJP::exitProgramWithError("symbol not found", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "symbol not found", ERR_CODE, token.lineNumber);
                     }
                     if (symbol.symbolType != FJP::SymbolType::SYMBOL_CONST) {
-                        FJP::exitProgramWithError("an array can be initialized only with a const value", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "an array can be initialized only with a const value", ERR_CODE, token.lineNumber);
                     }
                     if (symbol.value < 1) {
-                        FJP::exitProgramWithError("size has to be >= 1", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "size has to be >= 1", ERR_CODE, token.lineNumber);
                     }
                     arSize += (symbol.value - 1);
                     frameVariableCount += (symbol.value - 1);
@@ -219,20 +219,20 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
                     arraySize = symbol.value;
                     break;
                 default:
-                    FJP::exitProgramWithError("invalid array size", ERR_CODE, token.lineNumber);
+                    FJP::exitProgramWithError(__FUNCTION__, "invalid array size", ERR_CODE, token.lineNumber);
                     break;
             }
 
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
-                FJP::exitProgramWithError("missing ]", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "missing ]", ERR_CODE, token.lineNumber);
             }
             token = lexer->getNextToken();
 
             if (token.tokenType == FJP::TokenType::INIT_SIGN) {
                 token = lexer->getNextToken();
                 if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
-                    FJP::exitProgramWithError("invalid initialization - missing {", ERR_CODE, token.lineNumber);
+                    FJP::exitProgramWithError(__FUNCTION__, "invalid initialization - missing {", ERR_CODE, token.lineNumber);
                 }
                 for (int i = 0; i < arraySize; i++) {
                     token = lexer->getNextToken();
@@ -240,7 +240,7 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
                     switch (dataType) {
                         case FJP::TokenType::INT:
                             if (token.tokenType != FJP::TokenType::NUMBER) {
-                                FJP::exitProgramWithError("invalid initialization - number expected", ERR_CODE, token.lineNumber);
+                                FJP::exitProgramWithError(__FUNCTION__, "invalid initialization - number expected", ERR_CODE, token.lineNumber);
                             }
                             number = atoi(token.value.c_str());
                             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, number});
@@ -248,7 +248,7 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
                             break;
                         case FJP::TokenType::BOOL:
                             if (!(token.tokenType == FJP::TokenType::TRUE || token.tokenType == FJP::TokenType::FALSE)) {
-                                FJP::exitProgramWithError("invalid initialization - bool value expected", ERR_CODE, token.lineNumber);
+                                FJP::exitProgramWithError(__FUNCTION__, "invalid initialization - bool value expected", ERR_CODE, token.lineNumber);
                             }
                             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, token.tokenType == FJP::TokenType::TRUE});
                             generatedCode.addInstruction({FJP::OP_CODE::STO, symbolTable.getDepthLevel() - arrayDepth, arrayAddress + i});
@@ -258,11 +258,11 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
                     }
                     token = lexer->getNextToken();
                     if (token.tokenType != FJP::TokenType::COMMA && i < arraySize - 1) {
-                        FJP::exitProgramWithError("array has to be fully initialized", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "array has to be fully initialized", ERR_CODE, token.lineNumber);
                     }
                 }
                 if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
-                    FJP::exitProgramWithError("invalid initialization - missing }", ERR_CODE, token.lineNumber);
+                    FJP::exitProgramWithError(__FUNCTION__, "invalid initialization - missing }", ERR_CODE, token.lineNumber);
                 }
                 token = lexer->getNextToken();
             }
@@ -272,7 +272,7 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
         }
     }
     if (token.tokenType !=  FJP::TokenType::SEMICOLON) {
-        FJP::exitProgramWithError("missing ';'", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing ';'", ERR_CODE, token.lineNumber);
         return;
     }
     token = lexer->getNextToken();
@@ -284,31 +284,31 @@ void FJP::Parser::processFunction() {
     while (token.tokenType == FJP::TokenType::FUNCTION) {
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::IDENTIFIER) {
-            FJP::exitProgramWithError("missing identifier", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "missing identifier", ERR_CODE, token.lineNumber);
         }
         identifier = token.value;
         if (symbolTable.existsSymbol(identifier) ==  true) {
-            FJP::exitProgramWithError("token name is already taken", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "token name is already taken", ERR_CODE, token.lineNumber);
         }
         symbolTable.addSymbol({FJP::SymbolType::SYMBOL_FUNCTION, token.value, generatedCode.getSize(), symbolTable.getDepthLevel(), arSize, 0});
 
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-            FJP::exitProgramWithError("missing (", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "missing (", ERR_CODE, token.lineNumber);
         }
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
-            FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
         }
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
-            FJP::exitProgramWithError("missing {", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "missing {", ERR_CODE, token.lineNumber);
         }
         token = lexer->getNextToken();
         processBlock();
 
         if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
-            FJP::exitProgramWithError("missing }", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "missing }", ERR_CODE, token.lineNumber);
         }
         token = lexer->getNextToken();
     }
@@ -347,7 +347,7 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
         case FJP::SymbolType::SYMBOL_BOOL:
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::ASSIGN) {
-                FJP::exitProgramWithError(":= expected", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, ":= expected", ERR_CODE, token.lineNumber);
             }
             token = lexer->getNextToken();
             if (token.tokenType == FJP::TokenType::IDENTIFIER) {
@@ -381,18 +381,18 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
         case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::LEFT_SQUARED_BRACKET) {
-                FJP::exitProgramWithError("[ expected", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "[ expected", ERR_CODE, token.lineNumber);
             }
             token = lexer->getNextToken();
             processExpression();
             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, variable.address });
             generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS });
             if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
-                FJP::exitProgramWithError("] expected", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "] expected", ERR_CODE, token.lineNumber);
             }
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::ASSIGN) {
-                FJP::exitProgramWithError(":= expected", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, ":= expected", ERR_CODE, token.lineNumber);
             }
             token = lexer->getNextToken();
             processExpression();
@@ -403,13 +403,13 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
             generatedCode.addInstruction({FJP::OP_CODE::STA, symbolTable.getDepthLevel() - variable.level, 0});
             break;
         default:
-            FJP::exitProgramWithError("variable type expected", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "variable type expected", ERR_CODE, token.lineNumber);
             break;
     }
 
     if (expectSemicolon) {
         if (token.tokenType != FJP::TokenType::SEMICOLON) {
-            FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "missing ;", ERR_CODE, token.lineNumber);
         }
         token = lexer->getNextToken();
     }
@@ -419,7 +419,7 @@ void FJP::Parser::processLabel(const std::string label) {
     symbolTable.addSymbol({FJP::SymbolType::SYMBOL_LABEL, label, 0, 0, generatedCode.getSize(), 0});
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::COLON) {
-        FJP::exitProgramWithError(": expected", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, ": expected", ERR_CODE, token.lineNumber);
     }
     auto itr = undefinedLabels.find(label);
     if (itr != undefinedLabels.end()) {
@@ -440,23 +440,23 @@ void FJP::Parser::processCall() {
     Symbol function = symbolTable.findSymbol(token.value);
 
     if (function.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
-        FJP::exitProgramWithError("identifier not found", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "identifier not found", ERR_CODE, token.lineNumber);
     }
 
     if (function.symbolType != FJP::SymbolType::SYMBOL_FUNCTION) {
-        FJP::exitProgramWithError("function name expected", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "function name expected", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-        FJP::exitProgramWithError("( expected", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "( expected", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
-        FJP::exitProgramWithError(") expected", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, ") expected", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
-        FJP::exitProgramWithError("; expected", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "; expected", ERR_CODE, token.lineNumber);
     }
 
     generatedCode.addInstruction({FJP::OP_CODE::CAL, symbolTable.getDepthLevel() - function.level, function.value});
@@ -482,7 +482,7 @@ void FJP::Parser::processIf() {
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing (", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing (", ERR_CODE, token.lineNumber);
     }
 
     token = lexer->getNextToken();
@@ -492,7 +492,7 @@ void FJP::Parser::processIf() {
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, 0});
 
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
     }
 
     token = lexer->getNextToken();
@@ -526,7 +526,7 @@ void FJP::Parser::processWhile() {
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing (", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing (", ERR_CODE, token.lineNumber);
     }
 
     token = lexer->getNextToken();
@@ -534,7 +534,7 @@ void FJP::Parser::processWhile() {
     int endOfWhileCondition = generatedCode.getSize();
 
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
     }
 
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, 0 });
@@ -552,21 +552,21 @@ void FJP::Parser::processDoWhile() {
     int doWhileStart = generatedCode.getSize();
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
-        FJP::exitProgramWithError("expected {", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "expected {", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     processStatement();
 
     if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
-        FJP::exitProgramWithError("expected }", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "expected }", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::WHILE) {
-        FJP::exitProgramWithError("missing while (do-while)", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing while (do-while)", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     processCondition();
@@ -577,7 +577,7 @@ void FJP::Parser::processDoWhile() {
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
-        FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing ;", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
 }
@@ -589,21 +589,21 @@ void FJP::Parser::processRepeatUntil() {
     int repeatUntilStart = generatedCode.getSize();
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
-        FJP::exitProgramWithError("expected {", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "expected {", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     processStatement();
 
     if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
-        FJP::exitProgramWithError("expected }", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "expected }", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::UNTIL) {
-        FJP::exitProgramWithError("missing while (repeat-until)", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing while (repeat-until)", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     processCondition();
@@ -614,7 +614,7 @@ void FJP::Parser::processRepeatUntil() {
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
-        FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing ;", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
 }
@@ -625,45 +625,45 @@ void FJP::Parser::processForeach() {
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing (", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing (", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
-        FJP::exitProgramWithError("missing identifier", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing identifier", ERR_CODE, token.lineNumber);
     }
     FJP::Symbol iterVariable = symbolTable.findSymbol(token.value);
     if (iterVariable.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
-        FJP::exitProgramWithError("identifier not found", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "identifier not found", ERR_CODE, token.lineNumber);
     }
     switch (iterVariable.symbolType) {
         case FJP::SymbolType::SYMBOL_INT:
         case FJP::SymbolType::SYMBOL_BOOL:
             break;
         default:
-            FJP::exitProgramWithError("invalid iterator type", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "invalid iterator type", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::COLON) {
-        FJP::exitProgramWithError("foreach - missing :", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "foreach - missing :", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
-        FJP::exitProgramWithError("missing identifier", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing identifier", ERR_CODE, token.lineNumber);
     }
     FJP::Symbol dataArray = symbolTable.findSymbol(token.value);
     if (dataArray.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
-        FJP::exitProgramWithError("array not found", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "array not found", ERR_CODE, token.lineNumber);
     }
 
     switch (iterVariable.symbolType) {
         case FJP::SymbolType::SYMBOL_INT:
             if (dataArray.symbolType != FJP::SymbolType::SYMBOL_INT_ARRAY) {
-                FJP::exitProgramWithError("the iterator and the array have to be the same type", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "the iterator and the array have to be the same type", ERR_CODE, token.lineNumber);
             }
             break;
         case FJP::SymbolType::SYMBOL_BOOL:
             if (dataArray.symbolType != FJP::SymbolType::SYMBOL_BOOL_ARRAY) {
-                FJP::exitProgramWithError("the iterator and the array have to be the same type", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "the iterator and the array have to be the same type", ERR_CODE, token.lineNumber);
             }
             break;
         default:
@@ -671,7 +671,7 @@ void FJP::Parser::processForeach() {
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
 
@@ -713,7 +713,7 @@ void FJP::Parser::processFor() {
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing (", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing (", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     processAssignment();
@@ -725,7 +725,7 @@ void FJP::Parser::processFor() {
     int startUpdatePart = generatedCode.getSize();
 
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
-        FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing ;", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
 
@@ -734,7 +734,7 @@ void FJP::Parser::processFor() {
     int endUpdatePart = generatedCode.getSize();
 
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     processStatement();
@@ -752,34 +752,34 @@ void FJP::Parser::processSwitch() {
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing (", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing (", ERR_CODE, token.lineNumber);
     }
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
-        FJP::exitProgramWithError("missing identifier", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing identifier", ERR_CODE, token.lineNumber);
     }
 
     Symbol variable = symbolTable.findSymbol(token.value);
     if (variable.symbolType == FJP::SYMBOL_NOT_FOUND) {
-        FJP::exitProgramWithError("identifier not found in symbol table", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "identifier not found in symbol table", ERR_CODE, token.lineNumber);
     }
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
     }
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
-        FJP::exitProgramWithError("missing {", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing {", ERR_CODE, token.lineNumber);
     }
 
     token = lexer->getNextToken();
     processCases(variable, breaks);
 
     if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
-        FJP::exitProgramWithError("missing }", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing }", ERR_CODE, token.lineNumber);
     }
 
     for (const auto &item : breaks) {
@@ -800,7 +800,7 @@ void FJP::Parser::processCases(Symbol &variable, std::list<int> &breaks) {
     if (token.tokenType != FJP::TokenType::NUMBER &&
         token.tokenType != FJP::TokenType::TRUE &&
         token.tokenType != FJP::TokenType::FALSE) {
-        FJP::exitProgramWithError("literal expected", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "literal expected", ERR_CODE, token.lineNumber);
     }
     if (token.tokenType == FJP::TokenType::NUMBER) {
         token_value = atoi(token.value.c_str());
@@ -809,12 +809,12 @@ void FJP::Parser::processCases(Symbol &variable, std::list<int> &breaks) {
     }
     if (((variable.symbolType == SYMBOL_INT) && token.tokenType != NUMBER) ||
         ((variable.symbolType == SYMBOL_BOOL) && !(token.tokenType == TRUE || token.tokenType == FALSE))) {
-        FJP::exitProgramWithError("literals must match up symbol type", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "literals must match up symbol type", ERR_CODE, token.lineNumber);
     }
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::COLON) {
-        FJP::exitProgramWithError("colon expected", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "colon expected", ERR_CODE, token.lineNumber);
     }
 
     token = lexer->getNextToken();
@@ -832,7 +832,7 @@ void FJP::Parser::processCases(Symbol &variable, std::list<int> &breaks) {
         generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::SEMICOLON) {
-            FJP::exitProgramWithError("semicolon expected", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "semicolon expected", ERR_CODE, token.lineNumber);
         }
         token = lexer->getNextToken();
         generatedCode[jpc_address].m++;
@@ -847,18 +847,18 @@ void FJP::Parser::processGoto() {
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
-        FJP::exitProgramWithError("identifier expected", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "identifier expected", ERR_CODE, token.lineNumber);
     }
     FJP::Symbol symbol = symbolTable.findSymbol(token.value);
 
     if (symbol.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
         undefinedLabels[token.value].push_back(generatedCode.getSize());
     } else if (symbol.symbolType != FJP::SymbolType::SYMBOL_LABEL) {
-        FJP::exitProgramWithError("label expected", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "label expected", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
-        FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing ;", ERR_CODE, token.lineNumber);
     }
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, symbol.address});
     token = lexer->getNextToken();
@@ -899,7 +899,7 @@ void FJP::Parser::processCondition() {
                 logicalOperation = token.tokenType;
                 break;
             default:
-                FJP::exitProgramWithError("invalid condition operator", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "invalid condition operator", ERR_CODE, token.lineNumber);
         }
         token = lexer->getNextToken();
         processExpression();
@@ -989,7 +989,7 @@ void FJP::Parser::processFactor() {
         case FJP::TokenType::IDENTIFIER:
             symbol = symbolTable.findSymbol(token.value);
             if (symbol.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
-                FJP::exitProgramWithError("identifier not found", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "identifier not found", ERR_CODE, token.lineNumber);
             }
             token = lexer->getNextToken();
             if (token.tokenType == FJP::TokenType::INSTANCEOF) {
@@ -1011,7 +1011,7 @@ void FJP::Parser::processFactor() {
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.symbolType == FJP::SYMBOL_FUNCTION});
                         break;
                     default:
-                        FJP::exitProgramWithError("invalid instanceof type", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "invalid instanceof type", ERR_CODE, token.lineNumber);
                         break;
                 }
             } else {
@@ -1027,7 +1027,7 @@ void FJP::Parser::processFactor() {
                     case FJP::SymbolType::SYMBOL_INT_ARRAY:
                     case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
                         if (token.tokenType != FJP::TokenType::LEFT_SQUARED_BRACKET) {
-                            FJP::exitProgramWithError("missing [", ERR_CODE, token.lineNumber);
+                            FJP::exitProgramWithError(__FUNCTION__, "missing [", ERR_CODE, token.lineNumber);
                         }
                         token = lexer->getNextToken();
                         processExpression();
@@ -1035,12 +1035,12 @@ void FJP::Parser::processFactor() {
                         generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS});
                         generatedCode.addInstruction({FJP::OP_CODE::LDA, symbolTable.getDepthLevel() - symbol.level, 0});
                         if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
-                            FJP::exitProgramWithError("missing ]", ERR_CODE, token.lineNumber);
+                            FJP::exitProgramWithError(__FUNCTION__, "missing ]", ERR_CODE, token.lineNumber);
                         }
                         token = lexer->getNextToken();
                         break;
                     default:
-                        FJP::exitProgramWithError("invalid identifier", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "invalid identifier", ERR_CODE, token.lineNumber);
                         break;
                 }
             }
@@ -1057,11 +1057,11 @@ void FJP::Parser::processFactor() {
             token = lexer->getNextToken();
             processExpression();
             if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
-                FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
             }
             break;
         default:
-            FJP::exitProgramWithError("Expected variable, number, (, or missing ;", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "Expected variable, number, (, or missing ;", ERR_CODE, token.lineNumber);
             break;
     }
     if (nextToken == true) {
@@ -1075,15 +1075,15 @@ void FJP::Parser::processRead() {
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing (", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing (", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
-        FJP::exitProgramWithError("identifier expected", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "identifier expected", ERR_CODE, token.lineNumber);
     }
     FJP::Symbol symbol = symbolTable.findSymbol(token.value);
     if (symbol.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
-        FJP::exitProgramWithError("symbol not found", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "symbol not found", ERR_CODE, token.lineNumber);
     }
 
     switch (symbol.symbolType) {
@@ -1101,7 +1101,7 @@ void FJP::Parser::processRead() {
         case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::LEFT_SQUARED_BRACKET) {
-                FJP::exitProgramWithError("missing [", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "missing [", ERR_CODE, token.lineNumber);
             }
             token = lexer->getNextToken();
             processExpression();
@@ -1116,20 +1116,20 @@ void FJP::Parser::processRead() {
 
             generatedCode.addInstruction({FJP::OP_CODE::STA, symbolTable.getDepthLevel() - symbol.level, 0});
             if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
-                FJP::exitProgramWithError("missing ]", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "missing ]", ERR_CODE, token.lineNumber);
             }
             break;
         default:
-            FJP::exitProgramWithError("symbol does not refer to a variable", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "symbol does not refer to a variable", ERR_CODE, token.lineNumber);
             break;
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
-        FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing ;", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
 }
@@ -1141,7 +1141,7 @@ void FJP::Parser::processWrite() {
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing (", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing (", ERR_CODE, token.lineNumber);
     }
 
     int number;
@@ -1152,7 +1152,7 @@ void FJP::Parser::processWrite() {
         case FJP::TokenType::IDENTIFIER:
             symbol = symbolTable.findSymbol(token.value);
             if (symbol.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
-                FJP::exitProgramWithError("symbol not found", ERR_CODE, token.lineNumber);
+                FJP::exitProgramWithError(__FUNCTION__, "symbol not found", ERR_CODE, token.lineNumber);
             }
 
             switch (symbol.symbolType) {
@@ -1164,7 +1164,7 @@ void FJP::Parser::processWrite() {
                 case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
                     token = lexer->getNextToken();
                     if (token.tokenType != FJP::TokenType::LEFT_SQUARED_BRACKET) {
-                        FJP::exitProgramWithError("missing [", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "missing [", ERR_CODE, token.lineNumber);
                     }
                     token = lexer->getNextToken();
 
@@ -1174,14 +1174,14 @@ void FJP::Parser::processWrite() {
                     generatedCode.addInstruction({FJP::OP_CODE::LDA, symbolTable.getDepthLevel() - symbol.level, 0});
 
                     if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
-                        FJP::exitProgramWithError("missing ]", ERR_CODE, token.lineNumber);
+                        FJP::exitProgramWithError(__FUNCTION__, "missing ]", ERR_CODE, token.lineNumber);
                     }
                     break;
                 case FJP::SymbolType::SYMBOL_CONST:
                     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.value});
                     break;
                 default:
-                    FJP::exitProgramWithError("symbol does not refer to a variable", ERR_CODE, token.lineNumber);
+                    FJP::exitProgramWithError(__FUNCTION__, "symbol does not refer to a variable", ERR_CODE, token.lineNumber);
                     break;
             }
             break;
@@ -1194,18 +1194,18 @@ void FJP::Parser::processWrite() {
             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, token.tokenType == FJP::TokenType::TRUE});
             break;
         default:
-            FJP::exitProgramWithError("invalid identifier to print out", ERR_CODE, token.lineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, "invalid identifier to print out", ERR_CODE, token.lineNumber);
             break;
     }
     generatedCode.addInstruction({FJP::OP_CODE::SIO, 0, FJP::SIO_TYPE::SIO_WRITE});
 
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
-        FJP::exitProgramWithError("missing )", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing )", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
-        FJP::exitProgramWithError("missing ;", ERR_CODE, token.lineNumber);
+        FJP::exitProgramWithError(__FUNCTION__, "missing ;", ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
 }

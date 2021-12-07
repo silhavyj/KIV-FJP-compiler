@@ -3,7 +3,7 @@
 namespace FJP {
 
     void exitProgramWithError(const char *errMsg, int errCode);
-    void exitProgramWithError(const char *errMsg, int errCode, int lineNumber);
+    void exitProgramWithError(const char *methodName, const char *errMsg, int errCode, int lineNumber);
 
     namespace IOErrors {
         static constexpr const char *ERROR_00 = "input file not found";

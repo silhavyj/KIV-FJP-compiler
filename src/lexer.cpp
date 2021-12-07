@@ -123,7 +123,7 @@ FJP::Token FJP::Lexer::parseNextToken() {
         std::string number = getValue(&isdigit);
 
         if (atoi(number.c_str()) < 0) {
-            FJP::exitProgramWithError(FJP::CompilationErrors::ERROR_02, ERR_CODE, currentLineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_02, ERR_CODE, currentLineNumber);
         }
         skipWhiteCharacters();
         return {
@@ -137,7 +137,7 @@ FJP::Token FJP::Lexer::parseNextToken() {
         std::string identifier = getValue(&is_part_of_identifier);
 
         if (identifier.length() > MAX_IDENTIFIER_LEN) {
-            FJP::exitProgramWithError(FJP::CompilationErrors::ERROR_03, ERR_CODE, currentLineNumber);
+            FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_03, ERR_CODE, currentLineNumber);
         }
         skipWhiteCharacters();
         return {
@@ -146,7 +146,7 @@ FJP::Token FJP::Lexer::parseNextToken() {
                 currentLineNumber
         };
     }
-    FJP::exitProgramWithError(FJP::CompilationErrors::ERROR_04, ERR_CODE, currentLineNumber);
+    FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_04, ERR_CODE, currentLineNumber);
     return {};
 }
 

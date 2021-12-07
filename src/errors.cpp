@@ -7,7 +7,7 @@ void FJP::exitProgramWithError(const char *errMsg, int errCode) {
     exit(errCode);
 }
 
-void FJP::exitProgramWithError(const char *errMsg, int errCode, int lineNumber) {
-    std::cout << "[line " << lineNumber <<  "] " << errMsg << std::endl;
+void FJP::exitProgramWithError(const char *methodName, const char *errMsg, int errCode, int lineNumber) {
+    std::cout << "[" << methodName << "][#" << lineNumber <<  "] " << errMsg << std::endl;
     exit(errCode);
 }
