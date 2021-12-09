@@ -115,7 +115,7 @@ void FJP::Parser::processConst() {
             }
 
             token = lexer->getNextToken();
-            if (token.tokenType != FJP::TokenType::INIT_SIGN) {
+            if (token.tokenType != FJP::TokenType::EQUALS) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_21, ERR_CODE, token.lineNumber);
                 return;
             }
@@ -229,7 +229,7 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
             }
             token = lexer->getNextToken();
 
-            if (token.tokenType == FJP::TokenType::INIT_SIGN) {
+            if (token.tokenType == FJP::TokenType::EQUALS) {
                 token = lexer->getNextToken();
                 if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
                     FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_18, ERR_CODE, token.lineNumber);

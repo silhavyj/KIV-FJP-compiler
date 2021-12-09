@@ -2,6 +2,8 @@ START
 int x;
 {
     x := # 15 > 0 ? 15 - 3 : 101* 2 + 1;
+    goto pp;
+pp:
     write(x);
 }
 END

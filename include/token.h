@@ -8,71 +8,78 @@
 
 namespace FJP {
 
+    /// List of all tokens available in the application.
+    /// A stream of these tokens is used as an input for the parser.
     enum TokenType {
-        IDENTIFIER,
-        NUMBER,
-        PLUS,
-        MINUS,
-        ASTERISK,
-        SLASH,
-        EQUALS,
-        NOT_EQUALS,
-        LESS,
-        LESS_OR_EQUAL,
-        GREATER,
-        GREATER_OR_EQUAL,
-        LEFT_PARENTHESIS,
-        RIGHT_PARENTHESIS,
-        LEFT_CURLY_BRACKET,
-        RIGHT_CURLY_BRACKET,
-        LEFT_SQUARED_BRACKET,
-        RIGHT_SQUARED_BRACKET,
-        LOGICAL_AND,
-        LOGICAL_OR,
-        COMMA,
-        COLON,
-        SEMICOLON,
-        PERIOD,
-        ASSIGN,
-        INIT_SIGN,
-        IF,
-        FOR,
-        WHILE,
-        DO,
-        REPEAT,
-        UNTIL,
-        CONST,
-        INT,
-        BOOL,
-        INT_ARRAY,
-        BOOL_ARRAY,
-        TRUE,
-        FALSE,
-        FUNCTION,
-        WRITE,
-        READ,
-        ELSE,
-        CALL,
-        EXCLAMATION_MARK,
-        QUESTION_MARK,
-        GOTO,
-        INSTANCEOF,
-        START,
-        UNKNOWN,
-        FOREACH,
-        SWITCH,
-        CASE,
-        BREAK,
-        HASH_MARK,
-        END
+        IDENTIFIER,            // _[a-zA-Z]*
+        NUMBER,                // [0-9]+
+        PLUS,                  // '+'
+        MINUS,                 // '-'
+        ASTERISK,              // '*'
+        SLASH,                 // '/'
+        EQUALS,                // '='
+        NOT_EQUALS,            // '!='
+        LESS,                  // '<'
+        LESS_OR_EQUAL,         // '<='
+        GREATER,               // '>'
+        GREATER_OR_EQUAL,      // '>='
+        LEFT_PARENTHESIS,      // '('
+        RIGHT_PARENTHESIS,     // ')'
+        LEFT_CURLY_BRACKET,    // '{'
+        RIGHT_CURLY_BRACKET,   // '}'
+        LEFT_SQUARED_BRACKET,  // '['
+        RIGHT_SQUARED_BRACKET, // ']'
+        LOGICAL_AND,           // '&&'
+        LOGICAL_OR,            // '||'
+        COMMA,                 // ','
+        COLON,                 // ':'
+        SEMICOLON,             // ';'
+        PERIOD,                // '.'
+        ASSIGN,                // ':='
+        IF,                    // 'if'
+        FOR,                   // 'for'
+        WHILE,                 // 'while'
+        DO,                    // 'do'
+        REPEAT,                // 'repeat'
+        UNTIL,                 // 'until'
+        CONST,                 // 'const'
+        INT,                   // 'int'
+        BOOL,                  // 'bool'
+        INT_ARRAY,             // 'int[]'
+        BOOL_ARRAY,            // 'bool[]'
+        TRUE,                  // 'true'
+        FALSE,                 // 'false'
+        FUNCTION,              // 'function'
+        WRITE,                 // 'write'
+        READ,                  // 'read'
+        ELSE,                  // 'else'
+        CALL,                  // 'call'
+        EXCLAMATION_MARK,      // '!'
+        QUESTION_MARK,         // '?'
+        GOTO,                  // 'goto'
+        INSTANCEOF,            // 'instanceof'
+        START,                 // 'START'
+        FOREACH,               // 'foreach'
+        SWITCH,                // 'switch'
+        CASE,                  // 'case'
+        BREAK,                 // 'break'
+        HASH_MARK,             // '#'
+        END,                   // 'END'
+        UNKNOWN
     };
 
+    /// Definition of a token which is being passed from the lexer to the parser.
     struct Token {
-        TokenType tokenType;
-        std::string value;
-        int lineNumber;
+        TokenType tokenType; ///< type of the token
+        std::string value;   ///< value of the token e.g. a number
+        int lineNumber;      ///< number of the line in the source code
     };
 
+    /// List of literal string values mapped onto their corresponding token values.
+    /// This std::vector will be sorted out upon the lexer instantiation. The reason
+    /// for sorting these values is to prevent mistreating tokens which happen
+    /// to be a prefix of another token. For example, ':' and ':='. Therefore,
+    /// the list will be sorted in a descending order by the token string value.
     static std::vector<std::pair<std::string, TokenType>> keywords = {
         {"instanceof",TokenType::INSTANCEOF            },
         {"function",  TokenType::FUNCTION              },
@@ -107,7 +114,6 @@ namespace FJP {
         {"==",        TokenType::EQUALS                },
         {"&&",        TokenType::LOGICAL_AND           },
         {"||",        TokenType::LOGICAL_OR            },
-        {"=",         TokenType::INIT_SIGN             },
         {"(",         TokenType::LEFT_PARENTHESIS      },
         {")",         TokenType::RIGHT_PARENTHESIS     },
         {"{",         TokenType::LEFT_CURLY_BRACKET    },
@@ -129,6 +135,15 @@ namespace FJP {
         {"#",         TokenType::HASH_MARK             }
     };
 
+    /// Prints out the token passed in as a parameter in a JSON format.
+    /// \param out output stream
+    /// \param token token to be printed to the stream
+    /// \return modified output stream (extended by the token)
     std::ostream &operator<<(std::ostream &out, const Token &token);
+
+    /// Converts a token type into a string value. This function
+    /// is used when printing tokens into the output stream.
+    /// \param tokenType type of a token
+    /// \return token type converted into a string value
     std::string token_type_to_str(TokenType tokenType);
 }
