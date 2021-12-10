@@ -2,14 +2,27 @@
 
 namespace FJP {
 
+    /// Exits the program with an error message.
+    /// \param errMsg error message to be displayed to the user
+    /// \param errCode error code
     void exitProgramWithError(const char *errMsg, int errCode);
+
+    /// Exits the program with an error message. Additionally,
+    /// it prints out the name of the method in which the error occurred.
+    /// This piece of information is useful for debugging purposes.
+    /// \param methodName the name of the method from which the program was terminated
+    /// \param errMsg error message to be displayed to the user
+    /// \param errCode error code
+    /// \param lineNumber line number within the source (input) program
     void exitProgramWithError(const char *methodName, const char *errMsg, int errCode, int lineNumber);
 
+    /// Error messages related to I/O errors.
     namespace IOErrors {
         static constexpr const char *ERROR_00 = "input file not found";
         static constexpr const char *ERROR_01 = "could not open output file";
     }
 
+    /// Compilation error messages. These messages are used at compile time.
     namespace CompilationErrors {
         static constexpr const char *ERROR_00 = "program is incomplete";
         static constexpr const char *ERROR_01 = "end of file due to an unclosed comment";
@@ -58,6 +71,7 @@ namespace FJP {
         static constexpr const char *ERROR_45 = "symbol not found";
     }
 
+    /// Runtime error messages. These messages are used at runtime.
     namespace RuntimeErrors {
         static constexpr const char *ERROR_00 = "stack overflow error";
         static constexpr const char *ERROR_01 = "arithmetic exception: division by zero error";
