@@ -156,8 +156,8 @@ FJP::Token FJP::Lexer::parseNextToken() {
             // and return the token.
             skipWhiteCharacters();
             return {
-                    keyword.second,    // type of the token
-                    tokenValue,            // value of the token
+                    keyword.second,   // type of the token
+                    tokenValue,       // value of the token
                     currentLineNumber // number of the line the token is on
             };
         }
@@ -177,8 +177,8 @@ FJP::Token FJP::Lexer::parseNextToken() {
         // Skip all the white spaces and return the token.
         skipWhiteCharacters();
         return {
-                NUMBER,            // type of the token
-                number,                // value of the token
+                NUMBER,           // type of the token
+                number,           // value of the token
                 currentLineNumber // number of the line the token is on
 
         };
@@ -197,8 +197,8 @@ FJP::Token FJP::Lexer::parseNextToken() {
         // Skip all the white spaces and return the token.
         skipWhiteCharacters();
         return {
-                IDENTIFIER,        // type of the token
-                identifier,            // value of the token
+                IDENTIFIER,       // type of the token
+                identifier,       // value of the token
                 currentLineNumber // number of the line the token is on
         };
     }
