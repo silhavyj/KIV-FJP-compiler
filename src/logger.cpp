@@ -14,11 +14,13 @@ FJP::Logger *FJP::Logger::getInstance() {
 }
 
 void FJP::Logger::log(const std::string &filename, uint32_t lineNumber, LogType logType, const char *message) {
+    // Set the log color by the type of the log (error/debug/info).
     switch (logType) {
         case LogType::ERROR:
             log(filename, lineNumber, ERR_SYMBOL, RED, message);
             break;
         case LogType::DEBUG:
+            // If the debug level is not on, do not create the log.
             #ifdef DEBUG_LEVEL_ON
                 log(filename, lineNumber, DEBUG_SYMBOL, YELLOW, message);
             #endif
