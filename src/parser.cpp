@@ -17,25 +17,32 @@ FJP::Parser* FJP::Parser::getInstance() {
     return instance;
 }
 
-FJP::Parser::Parser() : lexer(nullptr), arSize(0) {
+FJP::Parser::Parser() : lexer(nullptr), nextFreeAddress(0) {
 }
 
 FJP::GeneratedCode FJP::Parser::parse(FJP::Lexer *lexer, bool debug) {
+    // Make sure that the lexer is not nullptr.
     assert(lexer != nullptr);
 
     this->lexer = lexer;
     generatedCode = FJP::GeneratedCode();
 
+    // START
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::START) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_37, ERR_CODE, token.lineNumber);
     }
+
+    // <block>
     token = lexer->getNextToken();
     processBlock();
+
+    // END
     if (token.tokenType != FJP::TokenType::END) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_36, ERR_CODE, token.lineNumber);
     }
 
+    // Make sure that all undefined labels were eventually defined.
     for (auto &label : undefinedLabels) {
         std::string errMsg = "label '";
         errMsg += label.first;
@@ -43,54 +50,86 @@ FJP::GeneratedCode FJP::Parser::parse(FJP::Lexer *lexer, bool debug) {
         FJP::exitProgramWithError(__FUNCTION__, errMsg.c_str(), ERR_CODE, token.lineNumber);
     }
 
+    // If the debug flag is on, spill the generated code out into a file.
     if (debug == true) {
         storeCodeInstructionsIntoFile();
     }
+
+    // Return the generated program co it can be executed by the virtual machine.
     return generatedCode;
 }
 
 void FJP::Parser::storeCodeInstructionsIntoFile() {
+    // Open up the output file.
     std::ofstream file = std::ofstream (std::string(OUTPUT_FILE));
 
+    // Make sure the file has been successfully opened.
     if (file.is_open() == false) {
         FJP::exitProgramWithError(FJP::IOErrors::ERROR_01, ERR_CODE);
         return;
     }
+
+    // Store the generated code into the file.
     for (int i = 0; i < generatedCode.getSize(); i++) {
         file << "[#" << std::setw(ADDRESS_LEN) << std::setfill('0') << i << "] " << generatedCode[i];
         if (i < generatedCode.getSize() - 1) {
             file << "\n";
         }
     }
+
+    // Close the file at the end.
     file.close();
 }
 
 void FJP::Parser::processBlock() {
+    // Default allocation size of the frame - 0, base(l, EBP), EBP, EIP.
     int frameVariableCount = FRAME_INIT_VAR_COUNT;
-    arSize = FRAME_INIT_VAR_COUNT;
 
+    // Address of the next variable that will be created within the frame.
+    nextFreeAddress = FRAME_INIT_VAR_COUNT;
     symbolTable.createFrame();
+
+    // Added a new instruction that will allocate a certain amount
+    // of variable on the stack. The particular value will be specified
+    // once the block has been completely parsed.
     generatedCode.addInstruction({FJP::OP_CODE::INC, 0, 0});
     int incInstructionAddress = generatedCode.getSize() - 1;
 
+    // Process all const and variable declarations.
     processConst();
     processVariable(frameVariableCount);
+
+    // Add a JMP instruction, so we can skip all functions and jump straight
+    // at the first instruction of the "main function".
     int jmpAddress = generatedCode.getSize();
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
 
+    // Process all functions.
     processFunction();
+
+    // Now we know the first address of the actual program,
+    // so we can set the jump address of the instruction that we added before.
     generatedCode[jmpAddress].m = generatedCode.getSize();
+
+    // Also, since all variables must have been already declared, we can
+    // specifically say how many variables need to be allocated on the stack.
     generatedCode[incInstructionAddress].m = frameVariableCount;
 
+    // Process a statements.
     processStatement();
 
-
-    arSize -= FRAME_INIT_VAR_COUNT;
+    // Destroy the frame since we're about to return from the function.
+    nextFreeAddress -= FRAME_INIT_VAR_COUNT;
     symbolTable.destroyFrame();
+
+    // Add a return operation as a return from the function.
     generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_RET});
 }
 
+// const int <identifier> = 15, <identifier> = 155;
+// const bool <identifier> = true;
 void FJP::Parser::processConst() {
+    // const
     while (token.tokenType == FJP::TokenType::CONST) {
         token = lexer->getNextToken();
 
@@ -98,22 +137,25 @@ void FJP::Parser::processConst() {
         std::string identifier;
         FJP::TokenType dataType = token.tokenType;
 
+        // int / bool
         if (!(dataType == FJP::TokenType::INT || dataType == FJP::TokenType::BOOL)) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_29, ERR_CODE, token.lineNumber);
         }
 
         while (true) {
+            // identifier
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::IDENTIFIER) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_44, ERR_CODE, token.lineNumber);
                 return;
             }
+            // Make sure the name of the identifier isn't already taken.
             identifier = token.value;
             if (symbolTable.existsSymbol(identifier) == true) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_43, ERR_CODE, token.lineNumber);
                 return;
             }
-
+            // '='
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::EQUALS) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_21, ERR_CODE, token.lineNumber);
@@ -122,98 +164,129 @@ void FJP::Parser::processConst() {
             token = lexer->getNextToken();
 
             switch (dataType) {
+                // If the type is an integer, the next token has to be a number.
                 case FJP::TokenType::INT:
                     if (token.tokenType != FJP::TokenType::NUMBER) {
                         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_07, ERR_CODE, token.lineNumber);
                     }
+                    // Convert the token value into an int and set to the identifier in the symbol table.
                     value = atoi(token.value.c_str());
                     symbolTable.addSymbol({FJP::SymbolType::SYMBOL_CONST, identifier, value, 0, 0, 0});
                     break;
+
+                // If the type is a bool, the next token has to be either true or false.
                 case FJP::TokenType::BOOL:
                     if (!(token.tokenType == FJP::TokenType::TRUE || token.tokenType == FJP::TokenType::FALSE)) {
                         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_10, ERR_CODE, token.lineNumber);
                     }
+                    // Convert the token value into an int (0 = false, 1 = true) and set to the identifier in the symbol table.
                     symbolTable.addSymbol({FJP::SymbolType::SYMBOL_CONST, identifier, token.tokenType == FJP::TokenType::TRUE, 0, 0, 0});
                     break;
                 default:
                     break;
             }
+            // ','
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::COMMA)
                 break;
         }
+        // ';'
         if (token.tokenType != FJP::TokenType::SEMICOLON) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
         }
+
+        // Read the next token so it can be processed.
         token = lexer->getNextToken();
     }
 }
 
+// <int>/<bool> <identifier>, <identifier>;
+// int x, arr[10];
+// bool a, b, c, d[2], e[111];
 void FJP::Parser::processVariable(int &frameVariableCount) {
+    // int/bool
     FJP::TokenType dataType = token.tokenType;
-
     if (!(dataType == FJP::TokenType::INT || dataType == FJP::TokenType::BOOL)) {
         return;
     }
 
-    int arrayAddress;
-    int arraySize = 0;
-    int arrayDepth;
+    int arrayAddress;  // start address of an array
+    int arraySize = 0; // size of an array
+    int arrayDepth;    // level/depth of an array
+
     int number;
     std::string identifier;
     FJP::Symbol symbol;
 
     while (true) {
+        // identifier
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::IDENTIFIER) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_04, ERR_CODE, token.lineNumber);
         }
+
+        // Make sure the name is not already taken.
         identifier = token.value;
         if (symbolTable.existsSymbol(identifier) ==  true) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_43, ERR_CODE, token.lineNumber);
         }
 
         switch (dataType) {
+            // int (default value is 0)
             case FJP::TokenType::INT:
-                symbolTable.addSymbol({FJP::SymbolType::SYMBOL_INT, identifier, DEFAULT_INT_VALUE, symbolTable.getDepthLevel(), arSize, 0 });
+                symbolTable.addSymbol({FJP::SymbolType::SYMBOL_INT, identifier, DEFAULT_INT_VALUE, symbolTable.getDepthLevel(), nextFreeAddress, 0 });
                 break;
+
+            // bool (default value is false)
             case FJP::TokenType::BOOL:
-                symbolTable.addSymbol({FJP::SymbolType::SYMBOL_BOOL, identifier, DEFAULT_BOOL_VALUE, symbolTable.getDepthLevel(), arSize, 0 });
+                symbolTable.addSymbol({FJP::SymbolType::SYMBOL_BOOL, identifier, DEFAULT_BOOL_VALUE, symbolTable.getDepthLevel(), nextFreeAddress, 0 });
                 break;
             default:
                 break;
         }
-        arSize++;
+        nextFreeAddress++;
         frameVariableCount++;
+
+        // Store the level of the variable in case it is an array - it will need to be
+        // escalated from an ordinary integer/bool.
         arrayDepth = symbolTable.getDepthLevel();
 
+        // '['
         token = lexer->getNextToken();
         if (token.tokenType == FJP::TokenType::LEFT_SQUARED_BRACKET) {
-            arrayAddress = arSize - 1;
+            arrayAddress = nextFreeAddress - 1;
             token = lexer->getNextToken();
 
             switch (token.tokenType) {
+                // number e.g. arr[10]
                 case FJP::TokenType::NUMBER:
                     arraySize = atoi(token.value.c_str());
                     if (arraySize <= 0) {
                         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_40, ERR_CODE, token.lineNumber);
                     }
-                    arSize += (arraySize - 1);
+                    nextFreeAddress += (arraySize - 1); // -1 because the int is already there, it has just been escalated to an array
                     frameVariableCount += (arraySize - 1);
                     symbolTable.makeArray(identifier, arraySize);
                     break;
+
+                // identifier  e.g. arr[N]
                 case FJP::TokenType::IDENTIFIER:
+                    // Make sure the symbol does exist in the symbol table.
                     symbol = symbolTable.findSymbol(token.value);
                     if (symbol.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
                         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_45, ERR_CODE, token.lineNumber);
                     }
+
+                    // An array can be initialized only with a constance value.
                     if (symbol.symbolType != FJP::SymbolType::SYMBOL_CONST) {
                         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_06, ERR_CODE, token.lineNumber);
                     }
+
+                    // Arrays of a size less than 1 are not allowed.
                     if (symbol.value < 1) {
                         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_40, ERR_CODE, token.lineNumber);
                     }
-                    arSize += (symbol.value - 1);
+                    nextFreeAddress += (symbol.value - 1);
                     frameVariableCount += (symbol.value - 1);
                     symbolTable.makeArray(identifier, symbol.value);
                     arraySize = symbol.value;
@@ -223,21 +296,27 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
                     break;
             }
 
+            // ']'
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_16, ERR_CODE, token.lineNumber);
             }
             token = lexer->getNextToken();
 
+            // '='
             if (token.tokenType == FJP::TokenType::EQUALS) {
+                // '{'
                 token = lexer->getNextToken();
                 if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
                     FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_18, ERR_CODE, token.lineNumber);
                 }
+
+                // If the user decides to initialize the array, they need
+                // to initialize all elements, not just a subarray.
                 for (int i = 0; i < arraySize; i++) {
                     token = lexer->getNextToken();
-
                     switch (dataType) {
+                        // 'int'
                         case FJP::TokenType::INT:
                             if (token.tokenType != FJP::TokenType::NUMBER) {
                                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_07, ERR_CODE, token.lineNumber);
@@ -246,7 +325,10 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
                             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, number});
                             generatedCode.addInstruction({FJP::OP_CODE::STO, symbolTable.getDepthLevel() - arrayDepth, arrayAddress + i});
                             break;
+
+                        // 'bool'
                         case FJP::TokenType::BOOL:
+                            // If it's an array of booleans, the only allowed values are true and false.
                             if (!(token.tokenType == FJP::TokenType::TRUE || token.tokenType == FJP::TokenType::FALSE)) {
                                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_10, ERR_CODE, token.lineNumber);
                             }
@@ -256,60 +338,86 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
                         default:
                             break;
                     }
+                    // Make sure the whole array has been initialized.
                     token = lexer->getNextToken();
                     if (token.tokenType != FJP::TokenType::COMMA && i < arraySize - 1) {
                         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_08, ERR_CODE, token.lineNumber);
                     }
                 }
+                // '}'
                 if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
                     FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_19, ERR_CODE, token.lineNumber);
                 }
                 token = lexer->getNextToken();
             }
         }
+        // ','
         if (token.tokenType != FJP::TokenType::COMMA) {
             break;
         }
     }
+    // ';'
     if (token.tokenType !=  FJP::TokenType::SEMICOLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
         return;
     }
+
+    // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
+
+    // Recursively call the same function in case there are more lines of variable declarations.
     processVariable(frameVariableCount);
 }
 
+// function <identifier>() { <block> }
 void FJP::Parser::processFunction() {
     std::string identifier;
+
+    // function
     while (token.tokenType == FJP::TokenType::FUNCTION) {
+        // <identifier>
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::IDENTIFIER) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_44, ERR_CODE, token.lineNumber);
         }
+
+        // Make sure that the name of the identifier isn't already taken up.
         identifier = token.value;
         if (symbolTable.existsSymbol(identifier) ==  true) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_43, ERR_CODE, token.lineNumber);
         }
-        symbolTable.addSymbol({FJP::SymbolType::SYMBOL_FUNCTION, token.value, generatedCode.getSize(), symbolTable.getDepthLevel(), arSize, 0});
 
+        // Add the symbol into the symbol table.
+        symbolTable.addSymbol({FJP::SymbolType::SYMBOL_FUNCTION, token.value, generatedCode.getSize(), symbolTable.getDepthLevel(), nextFreeAddress, 0});
+
+        // '('
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_12, ERR_CODE, token.lineNumber);
         }
+
+        // ')'
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
         }
+
+        // '{'
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_18, ERR_CODE, token.lineNumber);
         }
+
+        // Process the body of the function.
         token = lexer->getNextToken();
         processBlock();
 
+        // '}'
         if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_19, ERR_CODE, token.lineNumber);
         }
+
+        // Load up the next token is it can be processed.
         token = lexer->getNextToken();
     }
 }
@@ -675,7 +783,7 @@ void FJP::Parser::processForeach() {
     }
     token = lexer->getNextToken();
 
-    int indexAddress = arSize;
+    int indexAddress = nextFreeAddress;
     generatedCode.addInstruction({FJP::OP_CODE::INC, 0, 1});
 
     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});

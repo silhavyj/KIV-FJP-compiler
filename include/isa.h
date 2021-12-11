@@ -19,7 +19,7 @@ namespace FJP {
         JPC,     ///< Conditional jump. It jumps if there is a 1 on the top of the stack (result of an operation).
         SIO,     ///< System I/O operation (read/write).
         LDA,     ///< Loads data on the top of the stack from an address which is stored on the top of the stack.
-        STA      ///< Stores the value which is on the top of the stack at an address which is at the second position from the top of the stack.
+        STA      ///< Stores the value which is on the top of the stack at the address which is at the second position from the top of the stack.
     };
 
     /// Enumeration of different operations supported
