@@ -439,26 +439,41 @@ void FJP::Parser::processStatement() {
     processWrite();
 }
 
+// <identifier> := <expression>;
+// <identifier> := <identifier> := <identifier> := <expression>;
 void FJP::Parser::processAssignment(bool expectSemicolon) {
+    // <identifier>
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
         return;
     }
 
+    // Make sure the identifier exists in the symbol table. If it's not found,
+    // it is treated as a label (goto).
+    // label:
     FJP::Symbol variable = symbolTable.findSymbol(token.value);
     if (variable.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
+        // Process the label and return the function.
         processLabel(token.value);
         return;
     }
+
     bool isAnotherAssign = true;
     switch (variable.symbolType) {
+        // If the identifier is an integer or bool.
         case FJP::SymbolType::SYMBOL_INT:
         case FJP::SymbolType::SYMBOL_BOOL:
+            // ':='
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::ASSIGN) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_14, ERR_CODE, token.lineNumber);
             }
+            // <identifier>
             token = lexer->getNextToken();
             if (token.tokenType == FJP::TokenType::IDENTIFIER) {
+
+                // Check if the token two steps ahead is also an identifier. If it's
+                // not an identifier, it has to be treated as an expression.
+                // For example <identifier> := <identifier> or <identifier> := <identifier> + 55
                 token = lexer->getNextToken();
                 if (token.tokenType != FJP::TokenType::ASSIGN) {
                     lexer->returnToPreviousToken();
@@ -467,7 +482,10 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
                     isAnotherAssign = false;
                 }
                 if (isAnotherAssign) {
+                    // Recursively process another assignment.
                     processAssignment();
+
+                    // Copy the value from the previous variable into the current one (chain of assignments).
                     generatedCode.addInstruction({FJP::OP_CODE::LOD, lastProcessVariable.level, lastProcessVariable.address});
                     if (variable.symbolType == FJP::SymbolType::SYMBOL_BOOL) {
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0 });
@@ -476,8 +494,11 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
                     generatedCode.addInstruction({ FJP::OP_CODE::STO, symbolTable.getDepthLevel() - variable.level, variable.address });
                 }
             }
+
+            // <expression>
             processExpression();
 
+            // If the identifier was a boolean, convert the result of the expression into 1/0.
             if (variable.symbolType == FJP::SymbolType::SYMBOL_BOOL) {
                 generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0 });
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
@@ -485,25 +506,40 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
             generatedCode.addInstruction({ FJP::OP_CODE::STO, symbolTable.getDepthLevel() - variable.level, variable.address });
             lastProcessVariable = variable;
             break;
+
+        // If the symbol is an array.
         case FJP::SymbolType::SYMBOL_INT_ARRAY:
         case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
+            // '['
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::LEFT_SQUARED_BRACKET) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_17, ERR_CODE, token.lineNumber);
             }
+
+            // <expression>
             token = lexer->getNextToken();
             processExpression();
+
+            // Calculate the address of the element in the array (base + offset).
             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, variable.address });
             generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS });
+
+            // ']'
             if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_16, ERR_CODE, token.lineNumber);
             }
+
+            // ':='
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::ASSIGN) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_14, ERR_CODE, token.lineNumber);
             }
+
+            // <expression>
             token = lexer->getNextToken();
             processExpression();
+
+            // If the identifier was a boolean, convert the result of the expression into 1/0.
             if (variable.symbolType == FJP::SymbolType::SYMBOL_BOOL_ARRAY) {
                 generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0 });
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
@@ -515,6 +551,7 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
             break;
     }
 
+    // ';'
     if (expectSemicolon) {
         if (token.tokenType != FJP::TokenType::SEMICOLON) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
