@@ -17,7 +17,8 @@ namespace FJP {
         MINUS,                 // '-'
         ASTERISK,              // '*'
         SLASH,                 // '/'
-        EQUALS,                // '='
+        EQUALS,                // '=='
+        CONST_INIT,            // '='
         NOT_EQUALS,            // '!='
         LESS,                  // '<'
         LESS_OR_EQUAL,         // '<='
@@ -114,6 +115,7 @@ namespace FJP {
         {"==",        TokenType::EQUALS                },
         {"&&",        TokenType::LOGICAL_AND           },
         {"||",        TokenType::LOGICAL_OR            },
+        {"=",         TokenType::CONST_INIT            },
         {"(",         TokenType::LEFT_PARENTHESIS      },
         {")",         TokenType::RIGHT_PARENTHESIS     },
         {"{",         TokenType::LEFT_CURLY_BRACKET    },

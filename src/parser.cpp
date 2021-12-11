@@ -157,7 +157,7 @@ void FJP::Parser::processConst() {
             }
             // '='
             token = lexer->getNextToken();
-            if (token.tokenType != FJP::TokenType::EQUALS) {
+            if (token.tokenType != FJP::TokenType::CONST_INIT) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_21, ERR_CODE, token.lineNumber);
                 return;
             }
@@ -647,38 +647,56 @@ void FJP::Parser::processScope() {
     token = lexer->getNextToken();
 }
 
+// if ( <condition> ) <statement>
+// if ( <condition> ) <statement> else <statement>
 void FJP::Parser::processIf() {
+    // 'if'
     if (token.tokenType != TokenType::IF) {
         return;
     }
 
+    // '('
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_12, ERR_CODE, token.lineNumber);
     }
 
+    // <condition>
     token = lexer->getNextToken();
     processCondition();
 
+    // Insert a JPC instruction (conditional jump).
+    // If the result of the condition is false, we'll just skip the body of the if statement.
     int currentInstruction1 = generatedCode.getSize();
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, 0});
 
+    // ')'
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
     }
 
+    // <statement>
     token = lexer->getNextToken();
     processStatement();
 
+    // else
     if (token.tokenType == FJP::TokenType::ELSE) {
+        // Add a JMP instruction, so we can skip the else branch in case the condition is satisfied.
         int currentInstruction2 = generatedCode.getSize();
         generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
+
+        // Set the address of the JPC instruction to jump to
+        // in case the condition isn't satisfied - the else branch.
         generatedCode[currentInstruction1].m = generatedCode.getSize();
 
+        // <statement>
         token = lexer->getNextToken();
         processStatement();
+
+        // Set the address to jump to in case the condition is satisfied - skip the else branch.
         generatedCode[currentInstruction2].m = generatedCode.getSize();
     } else {
+        // Set the address of the JPC instruction - skip the body of the if statement.
         generatedCode[currentInstruction1].m = generatedCode.getSize();
     }
 }

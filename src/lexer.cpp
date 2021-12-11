@@ -203,6 +203,8 @@ FJP::Token FJP::Lexer::parseNextToken() {
         };
     }
 
+    std::cout << fileContent[currentCharIndex];
+
     // If the program gets to this point, it's an unknown character.
     FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_04, ERR_CODE, currentLineNumber);
 
