@@ -702,73 +702,104 @@ void FJP::Parser::processIf() {
 }
 
 void FJP::Parser::processNop() {
+    // ';'
     if (token.tokenType == FJP::TokenType::SEMICOLON) {
         token = lexer->getNextToken();
     }
 }
 
+// while ( <condition> ) <statement>
 void FJP::Parser::processWhile() {
+    // while
     if (token.tokenType != FJP::TokenType::WHILE) {
         return;
     }
 
+    // Start address of the while loop.
     int startWhileLoop = generatedCode.getSize();
 
+    // '('
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_12, ERR_CODE, token.lineNumber);
     }
 
+    // <condition>
     token = lexer->getNextToken();
     processCondition();
     int endOfWhileCondition = generatedCode.getSize();
 
+    // ')'
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
     }
 
+    // Add a JPC instruction (conditional jump) in order to skip the body of the
+    // while loop in case the condition is not satisfied.
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, 0 });
+
+    // <statement>
     token = lexer->getNextToken();
     processStatement();
 
+    // Jump back to the condition of the while loop.
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, startWhileLoop});
+
+    // Set the target jump address of the JPC instruction (in order to skip the body of the loop).
     generatedCode[endOfWhileCondition].m = generatedCode.getSize();
 }
 
+// do { <statement> } while ( <condition> );
 void FJP::Parser::processDoWhile() {
+    // do
     if (token.tokenType != FJP::TokenType::DO) {
         return;
     }
+    // Start address of the body of the do-while loop.
     int doWhileStart = generatedCode.getSize();
+
+    // '{'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_18, ERR_CODE, token.lineNumber);
     }
+
+    // <statement>
     token = lexer->getNextToken();
     processStatement();
 
+    // '}'
     if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_19, ERR_CODE, token.lineNumber);
     }
+
+    // 'while'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::WHILE) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_38, ERR_CODE, token.lineNumber);
     }
+
+    // '('
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
     }
+
+    // <condition>
     token = lexer->getNextToken();
     processCondition();
 
-    generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
-    generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_EQ});
+    // If the result of condition is true (1) jump to the first address
+    // of the body of the do-while loop.
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, doWhileStart });
 
+    // ';'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
     }
+
+    // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
 }
 
