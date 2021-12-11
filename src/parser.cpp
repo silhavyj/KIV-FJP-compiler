@@ -791,7 +791,14 @@ void FJP::Parser::processDoWhile() {
 
     // If the result of condition is true (1) jump to the first address
     // of the body of the do-while loop.
+    generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
+    generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_EQ});
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, doWhileStart });
+
+    // ')'
+    if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
+        FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
+    }
 
     // ';'
     token = lexer->getNextToken();
@@ -803,40 +810,65 @@ void FJP::Parser::processDoWhile() {
     token = lexer->getNextToken();
 }
 
+// repeat <statement> until ( <condition> );
 void FJP::Parser::processRepeatUntil() {
+    // repeat
     if (token.tokenType != FJP::TokenType::REPEAT) {
         return;
     }
+
+    // Start address of the body of the repeat-until loop.
     int repeatUntilStart = generatedCode.getSize();
+
+    // '{'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_18, ERR_CODE, token.lineNumber);
     }
+
+    // <statement>
     token = lexer->getNextToken();
     processStatement();
 
+    // '}'
     if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_19, ERR_CODE, token.lineNumber);
     }
+
+    // until
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::UNTIL) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_39, ERR_CODE, token.lineNumber);
     }
+
+    // '('
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_12, ERR_CODE, token.lineNumber);
     }
+
+    // <condition>
     token = lexer->getNextToken();
     processCondition();
 
+    // If the result of condition is true (1) jump to the first address
+    // of the body of the repeat-until loop.
     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
     generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_EQ});
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, repeatUntilStart });
 
+    // ')'
+    if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
+        FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
+    }
+
+    // ';'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
     }
+
+    // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
 }
 
