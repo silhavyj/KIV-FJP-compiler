@@ -556,16 +556,24 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
         if (token.tokenType != FJP::TokenType::SEMICOLON) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
         }
+        // Load up the next token, so it can be processed.
         token = lexer->getNextToken();
     }
 }
 
+// <identifier> :
 void FJP::Parser::processLabel(const std::string label) {
+    // We don't have to check if the name is already taken as it was done above.
     symbolTable.addSymbol({FJP::SymbolType::SYMBOL_LABEL, label, 0, 0, generatedCode.getSize(), 0});
+
+    // ':'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::COLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_11, ERR_CODE, token.lineNumber);
     }
+
+    // If the label has been on the list of undefined labels (labels yet to be declared).
+    // Change the jump address of the goto instruction and delete the label from the list.
     auto itr = undefinedLabels.find(label);
     if (itr != undefinedLabels.end()) {
         for (auto index : itr->second) {
@@ -573,50 +581,69 @@ void FJP::Parser::processLabel(const std::string label) {
         }
         undefinedLabels.erase(label);
     }
+    // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
 }
 
+// call <identifier>();
 void FJP::Parser::processCall() {
+    // 'call'
     if (token.tokenType != FJP::TokenType::CALL) {
         return;
     }
 
+    // <identifier>
     token = lexer->getNextToken();
     Symbol function = symbolTable.findSymbol(token.value);
 
+    // Make sure the symbol exists in the symbol table.
     if (function.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_45, ERR_CODE, token.lineNumber);
     }
 
+    // Make sure the identifier is a function.
     if (function.symbolType != FJP::SymbolType::SYMBOL_FUNCTION) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_23, ERR_CODE, token.lineNumber);
     }
+
+    // '('
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_12, ERR_CODE, token.lineNumber);
     }
+
+    // ')'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
     }
+
+    // ';'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
     }
 
+    // Create a JMP instruction to jump to the first address of the function.
     generatedCode.addInstruction({FJP::OP_CODE::CAL, symbolTable.getDepthLevel() - function.level, function.value});
+
+    // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
 }
 
+// { <statement>* }
 void FJP::Parser::processScope() {
+    // '{'
     if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
         return;
     }
     token = lexer->getNextToken();
     do {
+        // Keep processing statements until you come across with a '}'
         processStatement();
     } while (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET);
 
+    // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
 }
 
