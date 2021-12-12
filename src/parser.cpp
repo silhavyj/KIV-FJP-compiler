@@ -1239,55 +1239,86 @@ void FJP::Parser::processGoto() {
     token = lexer->getNextToken();
 }
 
+// ! <expression>
+// <expression> == <expression>
+// <expression> != <expression>
+// <expression> < <expression>
+// <expression> <= <expression>
+// <expression> > <expression>
+// <expression> => <expression>
+// <expression> && <expression>
+// <expression> || <expression>
 void FJP::Parser::processCondition() {
+    // '!'
     if (token.tokenType == FJP::TokenType::EXCLAMATION_MARK) {
+        // <expression>
         token = lexer->getNextToken();
         processExpression();
 
+        // Compare the result of the expression to 0, and store the result
+        // of the comparison on the top of the stack.
         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
         generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_EQ});
     } else {
+        // <expression>
         processExpression();
+
         FJP::OPRType instructionType = FJP::OPRType::OPR_RET;
         FJP::TokenType logicalOperation = FJP::TokenType::UNKNOWN;
         switch (token.tokenType) {
+            // '=='
             case FJP::TokenType::EQUALS:
                 instructionType = FJP::OPRType::OPR_EQ;
                 break;
+            // '!='
             case FJP::TokenType::NOT_EQUALS:
                 instructionType = FJP::OPRType::OPR_NEQ;
                 break;
+            // '<'
             case FJP::TokenType::LESS:
                 instructionType = FJP::OPRType::OPR_LESS;
                 break;
+            // '<='
             case FJP::TokenType::LESS_OR_EQUAL:
                 instructionType = FJP::OPRType::OPR_LESS_EQ;
                 break;
+            // '>'
             case FJP::TokenType::GREATER:
                 instructionType = FJP::OPRType::OPR_GRT;
                 break;
+            // '>='
             case FJP::TokenType::GREATER_OR_EQUAL:
                 instructionType = FJP::OPRType::OPR_GRT_EQ;
                 break;
+            // '&&'
             case FJP::TokenType::LOGICAL_AND:
+            // '||'
             case FJP::TokenType::LOGICAL_OR:
                 logicalOperation = token.tokenType;
                 break;
             default:
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_28, ERR_CODE, token.lineNumber);
         }
+
+        // <expression>
         token = lexer->getNextToken();
         processExpression();
 
+        // Based on the type of comparison, person an operation
+        // wit the two values (the results of the two expressions)
+        // on the top of the stack. The result is going to be 1/0.
         switch (logicalOperation) {
+            // If the operation is something other than '&&' or '||'.
             case FJP::TokenType::UNKNOWN:
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, instructionType});
                 break;
+            // '&&' - it needs to be done only by the operations supported by PL0
             case FJP::TokenType::LOGICAL_AND:
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_MUL});
                 generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ});
                 break;
+            // '||' - it needs to be done only by the operations supported by PL0
             case FJP::TokenType::LOGICAL_OR:
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS});
                 generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
@@ -1299,27 +1330,43 @@ void FJP::Parser::processCondition() {
     }
 }
 
+// <identifier> := # <condition> ? <expression> : <expression> ;
+// note: everything up to <condition> has been parsed in processExpression()
 void FJP::Parser::processTernaryOperator() {
+    // <condition>
     token = lexer->getNextToken();
     processCondition();
+
+    // '?'
     if (token.tokenType != FJP::TokenType::QUESTION_MARK) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_20, ERR_CODE, token.lineNumber);
     }
 
+    // Add JMP instructions, so we can jump to the appropriate
+    // expression based on the result of the condition.
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, generatedCode.getSize() + 2});
     int jmpInstructionAddress = generatedCode.getSize();
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
     int jmp2InstructionAddress = generatedCode.getSize();
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
 
+    // <expression>
     token = lexer->getNextToken();
     processExpression();
+
+    // ':'
     if (token.tokenType != FJP::TokenType::COLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_11, ERR_CODE, token.lineNumber);
     }
+
+    // Set the address of the first expression (it's now known since it's been parsed).
     generatedCode[jmpInstructionAddress].m = generatedCode.getSize();
+
+    // <expression>
     token = lexer->getNextToken();
     processExpression();
+
+    // Set the address of the second expression (it's now known since it's been parsed).
     generatedCode[jmp2InstructionAddress].m = generatedCode.getSize();
 }
 
