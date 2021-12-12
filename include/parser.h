@@ -94,9 +94,6 @@ namespace FJP {
         /// Processes an 'expression' (recursive descent).
         void processExpression();
 
-        /// Processes a 'nop' (recursive descent).
-        void processNop();
-
         /// Processes a 'call' (recursive descent).
         void processCall();
 

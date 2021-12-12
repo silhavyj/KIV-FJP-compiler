@@ -423,7 +423,11 @@ void FJP::Parser::processFunction() {
 }
 
 void FJP::Parser::processStatement() {
-    processNop();
+    // ';' - nop
+    if (token.tokenType == FJP::TokenType::SEMICOLON) {
+        token = lexer->getNextToken();
+        return;
+    }
     processAssignment();
     processCall();
     processScope();
@@ -698,13 +702,6 @@ void FJP::Parser::processIf() {
     } else {
         // Set the address of the JPC instruction - skip the body of the if statement.
         generatedCode[currentInstruction1].m = generatedCode.getSize();
-    }
-}
-
-void FJP::Parser::processNop() {
-    // ';'
-    if (token.tokenType == FJP::TokenType::SEMICOLON) {
-        token = lexer->getNextToken();
     }
 }
 
