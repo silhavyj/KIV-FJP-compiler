@@ -872,22 +872,32 @@ void FJP::Parser::processRepeatUntil() {
     token = lexer->getNextToken();
 }
 
+// foreach (<identifier> : <identifier) <statement>
 void FJP::Parser::processForeach() {
+    // foreach
     if (token.tokenType != FJP::TokenType::FOREACH) {
         return;
     }
+
+    // '('
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_12, ERR_CODE, token.lineNumber);
     }
+
+    // <identifier>
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_24, ERR_CODE, token.lineNumber);
     }
+
+    // Make sure the identifier exists in the symbol table.
     FJP::Symbol iterVariable = symbolTable.findSymbol(token.value);
     if (iterVariable.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_45, ERR_CODE, token.lineNumber);
     }
+
+    // Make sure the identifier is one of the supported data types.
     switch (iterVariable.symbolType) {
         case FJP::SymbolType::SYMBOL_INT:
         case FJP::SymbolType::SYMBOL_BOOL:
@@ -895,25 +905,34 @@ void FJP::Parser::processForeach() {
         default:
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_32, ERR_CODE, token.lineNumber);
     }
+
+    // ':'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::COLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_11, ERR_CODE, token.lineNumber);
     }
+
+    // <identifier>
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_24, ERR_CODE, token.lineNumber);
     }
+
+    // Make sure the identifier exists in the symbol table.
     FJP::Symbol dataArray = symbolTable.findSymbol(token.value);
     if (dataArray.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_09, ERR_CODE, token.lineNumber);
     }
 
     switch (iterVariable.symbolType) {
+        // If the type of the iterator is an integer. The array has to be an array of integers.
         case FJP::SymbolType::SYMBOL_INT:
             if (dataArray.symbolType != FJP::SymbolType::SYMBOL_INT_ARRAY) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_42, ERR_CODE, token.lineNumber);
             }
             break;
+
+        // If the type of the iterator is bool. The array has to be an array of booleans as well.
         case FJP::SymbolType::SYMBOL_BOOL:
             if (dataArray.symbolType != FJP::SymbolType::SYMBOL_BOOL_ARRAY) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_42, ERR_CODE, token.lineNumber);
@@ -922,41 +941,63 @@ void FJP::Parser::processForeach() {
         default:
             break;
     }
+
+    // ')'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
     }
     token = lexer->getNextToken();
 
+    // Create a temporary "variable" on the stack that will be used to store
+    // the current index as we iterate through the array.
     int indexAddress = nextFreeAddress;
     generatedCode.addInstruction({FJP::OP_CODE::INC, 0, 1});
 
+    // Initialize the current index to 0 (the first element of the array).
     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
     generatedCode.addInstruction({FJP::OP_CODE::STO, 0, indexAddress});
 
+    // Start of the condition of the foreach loop (checking whether we've reached
+    // the end of the array or not).
     int startForeachBody = generatedCode.getSize();
+
+    // Check if we have just reached the end of the array (current index == array.size).
     generatedCode.addInstruction({FJP::OP_CODE::LOD, 0, indexAddress});
     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, dataArray.size});
     generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ});
 
+    // Skip the body of the foreach loop if the end of the array has been reached.
     int exitForeachAddress = generatedCode.getSize();
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, 0});
 
+    // Load array[index] to the top of the stack. We need to take the base address
+    // of the array and add the current index to it, so we get the address of
+    // the current element.
     generatedCode.addInstruction({FJP::OP_CODE::LOD, 0, indexAddress});
     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, dataArray.address});
     generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS});
     generatedCode.addInstruction({FJP::OP_CODE::LDA, symbolTable.getDepthLevel() - dataArray.level, 0});
+
+    // Store the value (array[index]) into the iterator.
     generatedCode.addInstruction({FJP::OP_CODE::STO, symbolTable.getDepthLevel() - iterVariable.level, iterVariable.address});
 
+    // Increment the current index (moving on to the next element).
     generatedCode.addInstruction({FJP::OP_CODE::LOD, 0, indexAddress});
     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 1});
     generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS});
     generatedCode.addInstruction({FJP::OP_CODE::STO, 0, indexAddress});
 
+    // <statement>
     processStatement();
+
+    // Jump to the incrementation part of the loop (index++).
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, startForeachBody});
 
+    // Set the address to jump to in case the condition is not satisfied (end of the foreach loop).
     generatedCode[exitForeachAddress].m = generatedCode.getSize();
+
+    // Remove the temporary variable (index) off the stack.
     generatedCode.addInstruction({FJP::OP_CODE::DEC, 0, 1});
 }
 
