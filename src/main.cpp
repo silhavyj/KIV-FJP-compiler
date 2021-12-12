@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     // Make sure the user has provided the path to the input file.
     if (argc < 2) {
         FJP::exitProgramWithError("\nERR: Input file is not specified!\n"
-                                            "    Run './fjp --help'\n", 4);
+                                            "     Run './fjp --help'\n", 4);
     }
 
     // Check if the user turned on debugging.
