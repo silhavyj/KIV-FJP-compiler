@@ -1370,7 +1370,10 @@ void FJP::Parser::processTernaryOperator() {
     generatedCode[jmp2InstructionAddress].m = generatedCode.getSize();
 }
 
+// # <ternary operator>
+// (+-)? <term> (+-)? <term> (+-)? <term> ...
 void FJP::Parser::processExpression() {
+    // '#' -> treat it as a ternary operator
     if (token.tokenType == FJP::TokenType::HASH_MARK) {
         processTernaryOperator();
         return;
@@ -1378,27 +1381,36 @@ void FJP::Parser::processExpression() {
 
     FJP::TokenType currTokenType;
 
+    // '+' / '-'
     if (token.tokenType == FJP::TokenType::PLUS || token.tokenType == FJP::TokenType::MINUS) {
         currTokenType = token.tokenType;
+
+        // <term>
         token = lexer->getNextToken();
         processTerm();
 
+        // If the sign is a minus, invert the value on the top of the stack.
         if (currTokenType == FJP::TokenType::MINUS) {
             generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_INVERT_VALUE});
         }
     } else {
+        // <term>
         processTerm();
     }
     while (token.tokenType == FJP::TokenType::PLUS || token.tokenType == FJP::TokenType::MINUS) {
         currTokenType = token.tokenType;
 
+        // <term>
         token = lexer->getNextToken();
         processTerm();
 
+        // Add instruction to cary out the operation on top of the stack.
         switch (currTokenType) {
+            // '+'
             case FJP::TokenType::PLUS:
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS});
                 break;
+            // '-'
             case FJP::TokenType::MINUS:
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_MINUS});
                 break;
