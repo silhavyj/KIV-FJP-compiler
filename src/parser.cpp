@@ -1420,20 +1420,28 @@ void FJP::Parser::processExpression() {
     }
 }
 
+// <factor> * / <factor>
 void FJP::Parser::processTerm() {
     FJP::TokenType currTokenType;
+
+    // <factor>
     processFactor();
 
+    // * /
     while (token.tokenType == FJP::TokenType::ASTERISK || token.tokenType == FJP::TokenType::SLASH) {
         currTokenType = token.tokenType;
 
+        // <factor>
         token = lexer->getNextToken();
         processFactor();
 
+        // Add instruction to perform the operation on the top of the stack.
         switch (currTokenType) {
+            // '*'
             case FJP::TokenType::ASTERISK:
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_MUL});
                 break;
+            // '/'
             case FJP::TokenType::SLASH:
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_DIV});
                 break;
@@ -1443,6 +1451,11 @@ void FJP::Parser::processTerm() {
     }
 }
 
+// <number>
+// <const>
+// <identifier>
+// <true/false>
+// ( <expression> )
 void FJP::Parser::processFactor() {
     FJP::Symbol symbol;
     int numberValue;
