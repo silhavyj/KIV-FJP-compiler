@@ -1001,137 +1001,206 @@ void FJP::Parser::processForeach() {
     generatedCode.addInstruction({FJP::OP_CODE::DEC, 0, 1});
 }
 
+// for ( <assignment> ; <condition> ; <assignment> ) <statement>
 void FJP::Parser::processFor() {
+    // for
     if (token.tokenType != FJP::TokenType::FOR) {
         return;
     }
+
+    // '('
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_12, ERR_CODE, token.lineNumber);
     }
+
+    // <assignment>
     token = lexer->getNextToken();
     processAssignment();
 
+    // Store the start address of the condition of the for loop;
     int startCondition = generatedCode.getSize();
+
+    // <condition>
     processCondition();
+
+    // Generate a JPC instruction to skip the body of the for loop if the
+    // condition is not satisfied. Also, create a JMP instruction in order to
+    // skip the incrementation part of the for loop - we need to jump straight
+    // to the body of the loop.
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, 0 });
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
+
+    // Store the start address of the update part of the for loop (e.g. i++).
     int startUpdatePart = generatedCode.getSize();
 
+    // ';'
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
     }
-    token = lexer->getNextToken();
 
+    // <assignment>
+    token = lexer->getNextToken();
     processAssignment(false);
+
+    // After the second assignment (incrementation part), we need to jump back to the condition.
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, startCondition});
+
+    // Store the address of the end of the incrementation part of the for loop.
     int endUpdatePart = generatedCode.getSize();
 
+    // ')'
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
     }
+
+    // <statement>
     token = lexer->getNextToken();
     processStatement();
+
+    // Once the body has been executed, jump straight to the update part (incrementation part).
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, startUpdatePart});
 
+    // Set the address to jump to in case the condition isn't satisfied (end of the loop).
     generatedCode[startUpdatePart - 2].m = generatedCode.getSize();
+
+    // Set the address to jump to after the condition has been processed (the body of the for loop).
     generatedCode[startUpdatePart - 1].m = endUpdatePart;
 }
 
+// switch ( <identifier> ) { <cases> }
 void FJP::Parser::processSwitch() {
+    // List of the address of break statements that will need to be set
+    // once the end address is known (the end of the switch statement).
     std::list<int> breaks;
+
+    // switch
     if (token.tokenType != FJP::TokenType::SWITCH) {
         return;
     }
 
+    // '('
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_12, ERR_CODE, token.lineNumber);
     }
 
+    // <identifier>
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_44, ERR_CODE, token.lineNumber);
     }
 
+    // Make sure the identifier exists in the symbol table.
     Symbol variable = symbolTable.findSymbol(token.value);
     if (variable.symbolType == FJP::SYMBOL_NOT_FOUND) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_45, ERR_CODE, token.lineNumber);
     }
 
+    // ')'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
     }
 
+    // '{'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_18, ERR_CODE, token.lineNumber);
     }
 
+    // <cases>
     token = lexer->getNextToken();
     processCases(variable, breaks);
 
+    // '}'
     if (token.tokenType != FJP::TokenType::RIGHT_CURLY_BRACKET) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_19, ERR_CODE, token.lineNumber);
     }
 
+    // Set the jump address of all the break statements. The jumps address
+    // is the end of the switch statement.
     for (const auto &item : breaks) {
         generatedCode[item].m = generatedCode.getSize();
     }
 
+    // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
 }
 
+
+// case <literal> : <statement> (<break>;)?
 void FJP::Parser::processCases(Symbol &variable, std::list<int> &breaks) {
+    // case
     if (token.tokenType != FJP::TokenType::CASE) {
         return;
     }
 
+    // Check if the token is indeed a literal (number, true, false).
     token = lexer->getNextToken();
-
     int token_value;
     if (token.tokenType != FJP::TokenType::NUMBER &&
         token.tokenType != FJP::TokenType::TRUE &&
         token.tokenType != FJP::TokenType::FALSE) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_34, ERR_CODE, token.lineNumber);
     }
+
+    // Parse the literal. If it is a number, convert it into an integer, and if
+    // it is a boolean, convert it into 1/0.
     if (token.tokenType == FJP::TokenType::NUMBER) {
         token_value = atoi(token.value.c_str());
     } else {
         token_value = token.value == "true";
     }
+
+    // Make sure the literal is the same datatype as the variable used in the switch statement.
     if (((variable.symbolType == SYMBOL_INT) && token.tokenType != NUMBER) ||
         ((variable.symbolType == SYMBOL_BOOL) && !(token.tokenType == TRUE || token.tokenType == FALSE))) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_35, ERR_CODE, token.lineNumber);
     }
 
+    // ':'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::COLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_11, ERR_CODE, token.lineNumber);
     }
 
-    token = lexer->getNextToken();
-
+    // Compare the literal against the variable used in the switch statement.
     generatedCode.addInstruction({FJP::OP_CODE::LOD, symbolTable.getDepthLevel() - variable.level, variable.address});
     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, token_value});
     generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_EQ});
+
+    // If it doesn't match up, skip the body of the case statement and jump onto the next case.
     int jpc_address = generatedCode.getSize();
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, 0});
+
+    // <statement>
+    token = lexer->getNextToken();
     processStatement();
+
+    // Set the jump address to jump to in case the literal doesn't mach the value of the variable
+    // used in the switch statement (jump onto the next case).
     generatedCode[jpc_address].m = generatedCode.getSize();
 
+    // <break>
     if (token.tokenType == FJP::TokenType::BREAK) {
+        // Add the address of the break statement to the list of all breaks.
+        // The jump address will be known after the entire switch has been processed.
         breaks.push_back(generatedCode.getSize());
         generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, 0});
+
+        // ';'
         token = lexer->getNextToken();
         if (token.tokenType != FJP::TokenType::SEMICOLON) {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
         }
+
+        // Also, we need to skip the break itself in case we're jumping onto the next case.
         token = lexer->getNextToken();
         generatedCode[jpc_address].m++;
     }
 
+    // Process the next statement.
     processCases(variable, breaks);
 }
 
