@@ -3,6 +3,7 @@
 #include <list>
 #include <unordered_set>
 
+#include <ilexer.h>
 #include <token.h>
 
 namespace FJP {
@@ -10,7 +11,7 @@ namespace FJP {
     /// This class implements the functionality of a lexer.
     /// It takes an input file and converts it into a stream
     /// of tokens which are then consumed by the parser.
-    class Lexer {
+    class Lexer : public ILexer {
     private:
         /// Lexer error code (used when terminating the application).
         static constexpr int ERR_CODE = 1;
@@ -87,6 +88,11 @@ namespace FJP {
         /// \return the result of the consumption of the input characters (name, number, ...)
         std::string getValue(int (validation_fce)(int));
 
+        /// Returns true/false depending on whether the whole
+        /// input file has been processed or not.
+        /// \return true/false - depending on whether it's the end of file.
+        bool isEndOfFile() const;
+
     public:
         /// Returns the instance of the class.
         /// \return the instance of the class
@@ -97,20 +103,15 @@ namespace FJP {
         /// for parsing it.
         /// \param filename path to the input file (source code)
         /// \param debug if this flag is on, the tokens will be output into a file in a JSON format.
-        void init(std::string filename, bool debug = false);
+        void init(std::string filename, bool debug = false) override;
 
         /// Returns the next token. All tokens have been parsed
         /// beforehand and they are no trodden as a stream. This
         /// method is called by the parser when performing a recursive descent.
         /// \return the next token in the stream of tokens.
-        FJP::Token getNextToken();
+        FJP::Token getNextToken() override;
 
         /// Goes back one token within the stream of tokens.
-        void returnToPreviousToken();
-
-        /// Returns true/false depending on whether the whole
-        /// input file has been processed or not.
-        /// \return true/false - depending on whether it's the end of file.
-        bool isEndOfFile() const;
+        void returnToPreviousToken() override;
     };
 }

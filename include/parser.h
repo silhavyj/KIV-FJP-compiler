@@ -3,7 +3,8 @@
 #include <map>
 #include <memory>
 
-#include <lexer.h>
+#include <ilexer.h>
+#include <iparser.h>
 #include <code.h>
 #include <symbol_table.h>
 
@@ -11,7 +12,7 @@ namespace FJP {
 
     /// This class implements the functionality of a parser.
     /// It uses the lexer and its stream of tokens as an input.
-    class Parser {
+    class Parser : public IParser {
     private:
         /// Default value of an integer variable.
         static constexpr int DEFAULT_INT_VALUE = 0;
@@ -36,7 +37,7 @@ namespace FJP {
         static Parser *instance;
 
         /// An instance of Lexer (set upon initialization).
-        FJP::Lexer *lexer;
+        FJP::ILexer *lexer;
 
         /// Output of the parser - generated code
         FJP::GeneratedCode generatedCode;
@@ -162,6 +163,6 @@ namespace FJP {
         /// \param lexer instance of Lexer (getting a stream of tokens)
         /// \param debug flag if we want to output the program into a file
         /// \return generated code written in an extended/customized version of PL0
-        FJP::GeneratedCode parse(FJP::Lexer *lexer, bool debug = false);
+        FJP::GeneratedCode parse(FJP::ILexer *lexer, bool debug = false) override;
     };
 }

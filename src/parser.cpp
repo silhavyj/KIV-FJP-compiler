@@ -20,7 +20,7 @@ FJP::Parser* FJP::Parser::getInstance() {
 FJP::Parser::Parser() : lexer(nullptr), nextFreeAddress(0) {
 }
 
-FJP::GeneratedCode FJP::Parser::parse(FJP::Lexer *lexer, bool debug) {
+FJP::GeneratedCode FJP::Parser::parse(FJP::ILexer *lexer, bool debug) {
     // Make sure that the lexer is not nullptr.
     assert(lexer != nullptr);
 

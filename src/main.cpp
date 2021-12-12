@@ -3,9 +3,12 @@
 #include <cxxopts.hpp>
 
 #include <vm.h>
+#include <ivm.h>
 #include <errors.h>
 #include <lexer.h>
+#include <ilexer.h>
 #include <parser.h>
+#include <iparser.h>
 #include <logger.h>
 
 int main(int argc, char *argv[]) {
@@ -39,9 +42,9 @@ int main(int argc, char *argv[]) {
     bool debug = arg["debug"].as<bool>();
 
     // Create instances of all three logical parts that make up the whole application.
-    auto parser = FJP::Parser::getInstance();
-    auto lexer = FJP::Lexer::getInstance();
-    auto vm = FJP::VirtualMachine::getInstance();
+    FJP::IParser *parser = FJP::Parser::getInstance();
+    FJP::ILexer *lexer = FJP::Lexer::getInstance();
+    FJP::IVM *vm = FJP::VirtualMachine::getInstance();
 
     // Parse the input program and generate output code.
     lexer->init(argv[1], debug);

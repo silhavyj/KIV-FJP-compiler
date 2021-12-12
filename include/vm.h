@@ -3,6 +3,7 @@
 #include <fstream>
 #include <functional>
 
+#include <ivm.h>
 #include <isa.h>
 #include <code.h>
 
@@ -12,7 +13,7 @@ namespace FJP {
     /// It internally creates a virtual stack in order to be able to perform all
     /// the operations. Also, if enabled, it generates an output file containing
     /// stack trace information of the program as it is being executed.
-    class VirtualMachine {
+    class VirtualMachine : public IVM {
     private:
         static constexpr int STACK_SIZE = 1024; ///< size of the virtual stack (1 KB)
         static constexpr int ERROR_CODE = 3;    ///< error code of the VM (runtime exception)
@@ -173,6 +174,6 @@ namespace FJP {
         /// Executes a program given as a parameter.
         /// \param program the instance of a program to be executed
         /// \param debug flag if want to create an output file - stacktrace.txt
-        void execute(FJP::GeneratedCode &program, bool debug = false);
+        void execute(FJP::GeneratedCode &program, bool debug = false) override;
     };
 }
