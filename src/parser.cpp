@@ -1201,26 +1201,41 @@ void FJP::Parser::processCases(Symbol &variable, std::list<int> &breaks) {
     processCases(variable, breaks);
 }
 
+// goto <identifier> ;
 void FJP::Parser::processGoto() {
+    // goto
     if (token.tokenType != FJP::TokenType::GOTO) {
         return;
     }
+
+    // <identifier>
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_24, ERR_CODE, token.lineNumber);
     }
+
+    // Find the identifier in the symbol table.
     FJP::Symbol symbol = symbolTable.findSymbol(token.value);
 
+    // If the identifier is not found, added it to the list
+    // of labels that are still yet be declared (later on).
+    // If the identifier is found, make sure its type is label.
     if (symbol.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
         undefinedLabels[token.value].push_back(generatedCode.getSize());
     } else if (symbol.symbolType != FJP::SymbolType::SYMBOL_LABEL) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_33, ERR_CODE, token.lineNumber);
     }
+
+    // ';'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
     }
+
+    // Added a JMP instruction to jump to the address of the label.
     generatedCode.addInstruction({FJP::OP_CODE::JMP, 0, symbol.address});
+
+    // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
 }
 
