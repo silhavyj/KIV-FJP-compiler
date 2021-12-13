@@ -1,11 +1,19 @@
 # KIV/FJP Compiler
 
-# Table of contents
-
 - [Introduction](#introduction)
 - [How to compile and run the application](#how-to-compile-and-run-the-application)
+    * [Requirements](#requirements)
+    * [Compilation](#compilation)
+        + [Compilation on Linux](#compilation-on-linux)
+        + [Compilation on Windows](#compilation-on-windows)
+    * [Execution](#execution)
+        + [Execution on Linux](#execution-on-linux)
+        + [Execution on Windows](#execution-on-windows)
 - [Different options to run the application](#different-options-to-run-the-application)
 - [Debug outputs of the program](#debug-outputs-of-the-program)
+    * [tokens.json](#tokensjson)
+    * [code.pl0](#codepl0)
+    * [stacktrace.txt](#stacktracetxt)
 
 ## Introduction
 
@@ -126,7 +134,7 @@ function foo() {
 END
 ```
 
-### `tokens.json`
+### tokens.json
 
 This fill will contain all tokens recognized and parsed from the input file. The format of the file is JSON. As far as the example is concerned, the content of the file would look like this:
 
@@ -167,7 +175,7 @@ This fill will contain all tokens recognized and parsed from the input file. The
 
 ```
 
-### `code.pl0`
+### code.pl0
 
 The instructions into which the source code has been compiled look like this. The first column represents the address the instruction sits at. This is comes in handy when analyzing jump instructions, conditional jumps, function calls, etc.
 
@@ -194,7 +202,7 @@ The instructions into which the source code has been compiled look like this. Th
 [#019] OPR 0 0
 ```
 
-### `stacktrace.txt`
+### stacktrace.txt
 
 Lastly, if the program was also executed, the `-d` option generates a stacktrace which shows the contents of the stack as the program was being executed. This is very helpful as we get to see what the program exactly does at any given time. The stacktrace of the example program looks like this.
 
