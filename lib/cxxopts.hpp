@@ -780,13 +780,13 @@ namespace cxxopts
 
 #ifdef CXXOPTS_HAS_OPTIONAL
         template <typename T>
-    void
-    parse_value(const std::string& text, std::optional<T>& value)
-    {
-      T result;
-      parse_value(text, result);
-      value = std::move(result);
-    }
+        void
+        parse_value(const std::string& text, std::optional<T>& value)
+        {
+            T result;
+            parse_value(text, result);
+            value = std::move(result);
+        }
 #endif
 
         inline
@@ -1573,6 +1573,12 @@ namespace cxxopts
         std::string m_group;
     };
 
+    bool isblank_(char c) {
+        if(c == '\t' || c == '\r' || c == '\0' || c == '\n')
+            return true;
+        else return false;
+    }
+
     namespace
     {
         constexpr size_t OPTION_LONGEST = 30;
@@ -1697,12 +1703,12 @@ namespace cxxopts
             {
                 appendNewLine = false;
 
-                if (std::isblank(*previous))
+                if (isblank_(*previous))
                 {
                     lastSpace = current;
                 }
 
-                if (!std::isblank(*current))
+                if (!isblank_(*current))
                 {
                     onlyWhiteSpace = false;
                 }
