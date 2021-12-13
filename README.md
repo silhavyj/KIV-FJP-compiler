@@ -1,5 +1,12 @@
 # KIV/FJP Compiler
 
+# Table of contents
+
+- [Introduction](#introduction)
+- [How to compile and run the application](#how-to-compile-and-run-the-application)
+- [Different options to run the application](#different-options-to-run-the-application)
+- [Debug outputs of the program](#debug-outputs-of-the-program)
+
 ## Introduction
 
 Within this module, we decided to implement a compiler for a **programming language of our own**. The syntax of our programming language is based off of PL0 and may slightly resemble the C programming language. As an outcome of this project, we compile source code written in our programming language into an extended/customized version of the **PL0 instruction set** (https://en.wikipedia.org/wiki/PL/0). Also, in order to test the correctness of the compiler, we decided to implement a **virtual machine** that executes the compiled code, so we can see and analyze the output.
