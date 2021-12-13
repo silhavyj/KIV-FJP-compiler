@@ -24,7 +24,7 @@ namespace FJP {
         static constexpr int ERR_CODE = 2;
 
         /// Output file containing the stack trace as the program is being executed.
-        static constexpr const char *OUTPUT_FILE = "code.pl0-asm";
+        static constexpr const char *OUTPUT_FILE = "code.pl0";
 
         /// Number of digits an address is aligned to when being printed out.
         static constexpr int ADDRESS_LEN = 3;

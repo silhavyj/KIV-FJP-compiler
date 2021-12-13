@@ -32,7 +32,7 @@ void FJP::VirtualMachine::execute(FJP::GeneratedCode &program, bool debug) {
         }
 
         // This is the header of the file.
-        outputFile << "\t\t\t\tPC\tEBP\tESP\tstack\n";
+        outputFile << "\t\t\t\tEIP\tEBP\tESP\tstack\n";
         outputFile << "initial values\t\t\t" << EIP << "\t" << EBP << "\t" << ESP << '\n';
     }
 
