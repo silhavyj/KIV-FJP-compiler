@@ -189,7 +189,7 @@ The instructions into which the source code has been compiled look like this. Th
 
 ### `stacktrace.txt`
 
-Lastly, if the program was also executed, the `-d` option generates a stacktrace which shows the contents of the stack as the program was being executed. This is very helpful as we get to see what the program exactly do at any given time. The stacktrace of the example program looks like this.
+Lastly, if the program was also executed, the `-d` option generates a stacktrace which shows the contents of the stack as the program was being executed. This is very helpful as we get to see what the program exactly does at any given time. The stacktrace of the example program looks like this.
 
 ```
 				EIP	EBP	ESP	stack
