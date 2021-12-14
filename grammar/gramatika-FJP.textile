@@ -1,0 +1,41 @@
+<program> --> 'START' <block> 'END'
+<block> --> (<const>* <var>* <function>*) <statement>
+
+
+<const> --> <int_const> | <bool_const>
+<int_const> --> <int_const_decl> (',' <int_const_decl2>)* ';'
+<int_var_decl> --> 'int' <ident> '=' <num>
+<int_const_decl2> --> <ident> '=' <num>
+<bool_const> --> <bool_const_decl> (',' <bool_const_decl2>)* ';'
+<bool_var_decl> --> 'bool' <ident> '=' <boo_val>
+<bool_const_decl2> --> <ident> '=' <boo_val>
+<boo_val> --> 'true' | 'false'
+
+<var> --> <int_var> | <bool_var> 
+<int_var> --> <int_var_decl> (',' <int_var_decl2>)* ';'
+<int_var_decl> --> 'int' <ident> | 'int' <ident> '[' <num>  | <ident_const> ']' ( '=' '{' <num> (',' <num>)* '}')?
+<int_var_decl2> --> <ident> | <ident>'['<num> | <ident_const> ']'
+<bool_var> --> <bool_var_decl> (',' <bool_var_decl2>)* ';'
+<int_var_decl> --> 'bool' <ident> | 'bool' <ident> '[' <num>  | <ident_const> ']' ( '=' '{' <boo_val> (',' <boo_val>)* '}')?
+<int_var_decl2> --> <ident> | <ident>'['<boo_val> | <ident_const> ']'
+<num> --> [0-9]+
+
+<ident> --> _*[a-zA-Z]+
+
+<function> --> 'function' <ident> '('')' '{' <block> '}'
+<statement> --> ';' | <assignment> | <call> | <scope> | <if> | <while> | <do-while> | <for> | <foreach> | <repeat-until> | <switch> | <goto> | <read> | <write>
+<assignment> ->  <ident> (':=' <ident>)* ':=' <expression> ';' | <ternary-operator> | <label>
+<ternary-operator> --> <ident>':=' '#' <condition> '?' <expression> ':' <expression> ';'
+<label> --> <ident> ':'
+<call> --> 'call' <ident> '(' ')' ';'
+<scope> --> '{' <statement> '}' ('else' <statement>)?
+<if> --> 'if' '(' <condition> ')' <statement>
+<while> --> 'while' '(' <condition> ')' <statement>
+<do-while> --> 'do' '{' <statement> '}' 'while' '(' <condition> ')'
+<for> --> 'for' '(' <assignment> ';' <condition> ';' <assignment> ')' <statement>
+<goto> --> 'goto' <ident>';'
+<foreach> --> 'foreach' '(' <ident> : <ident_array> ')' <statement>
+<switch> --> 'switch' '(' <ident> ')' '{' <case>* '}'
+<case> --> 'case' ( <num> | <boo_val> ) ':' <statement> ('break' ';')?
+<read> --> 'read' '(' <ident> ')' ';'
+<write> --> 'write' '(' <ident> ')' ';'
