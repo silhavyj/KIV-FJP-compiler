@@ -2,18 +2,18 @@
 
 - [Introduction](#introduction)
 - [How to compile and run the application](#how-to-compile-and-run-the-application)
-    * [Requirements](#requirements)
-    * [Compilation](#compilation)
-        + [Compilation on Linux](#compilation-on-linux)
-        + [Compilation on Windows](#compilation-on-windows)
-    * [Execution](#execution)
-        + [Execution on Linux](#execution-on-linux)
-        + [Execution on Windows](#execution-on-windows)
+  * [Requirements](#requirements)
+  * [Compilation](#compilation)
+  * [Execution](#execution)
 - [Different options to run the application](#different-options-to-run-the-application)
 - [Debug outputs of the program](#debug-outputs-of-the-program)
-    * [tokens.json](#tokensjson)
-    * [code.pl0](#codepl0)
-    * [stacktrace.txt](#stacktracetxt)
+  * [tokens.json](#tokensjson)
+  * [code.pl0](#codepl0)
+  * [stacktrace.txt](#stacktracetxt)
+- [Features supported by our programming language](#features-supported-by-our-programming-language)
+  * [Grammar](#grammar)
+- [Implementation](#implementation)
+- [Possible improvements](#possible-improvements)
 
 ## Introduction
 
@@ -25,51 +25,29 @@ As for the programming language, we decided to go with **C++** without the use o
 
 ### Requirements
 
-Since we did not want to be limited by the Linux platform, we used the `cmake` tool (https://cmake.org/) to compile and build our application. In order to successfully build the application, you need to have `cmake` installed on your machine, whether it is Linux, Windows, or macOS. You need to make sure that you can execute the `cmake` command from your terminal. If you are on Windows, you may need to add the path to `cmake` into your environment variables.
+The compilation is done through the `make` command which is supposed to be executed in the root folder of the project structure. If you are on Linux, you can install make using this command `sudo apt-get install build-essential`. Alternatively, if you are on Windows, the simplest way to install make is using the `chocolatey` package manager - `choco install make` (https://chocolatey.org/install).
 
 ### Compilation
 
-#### Compilation on Linux
-
-If you are on Linux, all you are required to do is to navigate into the root folder of the project structure and execute the following commands in the terminal.
-
-The first command makes the file executable, and the second command builds the whole application.
+After you have installed `make` on your machine, all you are required to do is to navigate into the root folder of the project structure and run `make` in your terminal. This approach should work for both Windows and Linux.
 
 ```
-chmod +x build.sh
+make
 ```
 
-```
-./build.sh
-```
-
-#### Compilation on Windows
-
-If you are on Windows, the process of building the application is quite similar to the Linux one. All you need to do is to navigate into the root folder of the project structure and execute the following command in the command line.
+Similarly, if you want to clean everything, you can simply type `make clean`.
 
 ```
-start build.bat
+make clean
 ```
 
-An alternative way to do it is to double-click on the file.
+This will erase all files what were created upon successful compilation. Furthermore, it will also delete all files created by the application itself (if run with the `--debug` option).
 
 ### Execution
 
-Upon successful compilation, a `build` folder should be created containing a `fjp` file, which represents the executable application.
+Upon successful compilation, there should be a file called `fjp` or `fjp.exe`, depending on your operating system, created in the same folder from which you executed the `make` command. 
 
-#### Execution on Linux
-
-```
-./fjp
-```
-
-#### Execution on Windows
-
-```
-fjp.exe
-```
-
-After executing one of the commands listed above (depending on your operating system) you should be prompted with the following output.
+After you run the application, you should be prompted with the following output.
 
 ```
 ERR: Input file is not specified!
@@ -267,3 +245,94 @@ initial values			0	1	0
 ```
 
 On the left side, we can see the instruction that's currently being executed. We can also see the content of registers `EIP`, `EBP`, and `ESP`. On the right side, we can see the current content of the stack. Every function call (every frame) is separated by the `|` symbol.
+
+## Features supported by our programming language
+
+This section describes all features we implemented in our programming language.
+
+### Grammar
+
+A more formal way of defining the way you should write a program in our programming language could be seen below. However, we believe that is description might be rather too complex to see what you can and what you cannot do.
+
+```
+<program> --> 'START' <block> 'END'
+<block> --> (<const>* <var>* <function>*) <statement>
+
+
+<const> --> <int_const> | <bool_const>
+<int_const> --> <int_const_decl> (',' <int_const_decl2>)* ';'
+<int_var_decl> --> 'int' <ident> '=' <num>
+<int_const_decl2> --> <ident> '=' <num>
+<bool_const> --> <bool_const_decl> (',' <bool_const_decl2>)* ';'
+<bool_var_decl> --> 'bool' <ident> '=' <boo_val>
+<bool_const_decl2> --> <ident> '=' <boo_val>
+<boo_val> --> 'true' | 'false'
+
+<var> --> <int_var> | <bool_var> 
+<int_var> --> <int_var_decl> (',' <int_var_decl2>)* ';'
+<int_var_decl> --> 'int' <ident> | 'int' <ident> '[' <num>  | <ident_const> ']' ( '=' '{' <num> (',' <num>)* '}')?
+<int_var_decl2> --> <ident> | <ident>'['<num> | <ident_const> ']'
+<bool_var> --> <bool_var_decl> (',' <bool_var_decl2>)* ';'
+<int_var_decl> --> 'bool' <ident> | 'bool' <ident> '[' <num>  | <ident_const> ']' ( '=' '{' <boo_val> (',' <boo_val>)* '}')?
+<int_var_decl2> --> <ident> | <ident>'['<boo_val> | <ident_const> ']'
+<num> --> [0-9]+
+
+<ident> --> _*[a-zA-Z]+
+
+<function> --> 'function' <ident> '('')' '{' <block> '}'
+<statement> --> ';' | <assignment> | <call> | <scope> | <if> | <while> | <do-while> | <for> | <foreach> | <repeat-until> | <switch> | <goto> | <read> | <write>
+<assignment> ->  <ident> (':=' <ident>)* ':=' <expression> ';' | <ternary-operator> | <label>
+<ternary-operator> --> <ident>':=' '#' <condition> '?' <expression> ':' <expression> ';'
+<label> --> <ident> ':'
+<call> --> 'call' <ident> '(' ')' ';'
+<scope> --> '{' <statement> '}' ('else' <statement>)?
+<if> --> 'if' '(' <condition> ')' <statement>
+<while> --> 'while' '(' <condition> ')' <statement>
+<do-while> --> 'do' '{' <statement> '}' 'while' '(' <condition> ')'
+<for> --> 'for' '(' <assignment> ';' <condition> ';' <assignment> ')' <statement>
+<goto> --> 'goto' <ident>';'
+<foreach> --> 'foreach' '(' <ident> : <ident_array> ')' <statement>
+<switch> --> 'switch' '(' <ident> ')' '{' <case>* '}'
+<case> --> 'case' ( <num> | <boo_val> ) ':' <statement> ('break' ';')?
+<read> --> 'read' '(' <ident> ')' ';'
+<write> --> 'write' '(' <ident> ')' ';'
+```
+
+In order to make things simpler to understand, we provide a list of every feature available within our programming language. Overall, we support the following:
+
+* definition of integer variables
+* definition of integer constants
+* assignment
+* basic arithmetic and logic (+, -, *, /, AND, OR, negation and parentheses, operators for comparing numbers) loop (arbitrary)
+* loop (arbitrary)
+* simple condition (if without else)
+* definition of a subroutine (procedure, function, method) and its call
+
+---
+
+* for
+* do-while
+* repeat-until
+* foreach
+* else
+* data type boolean and logical operations with it
+* branching condition (switch, case)
+* multiple assignment (a = b = c = d = 3;)
+* conditional assignment / ternary operator (min = (a < b) ? a : b;)
+* commands for input and output (read, write - needs appropriate instructions to be used)
+
+---
+
+* GOTO command (watch out for remote jumps)
+* array and working with its elements
+
+---
+
+* instanceof operator
+
+---
+
+
+## Implementation
+
+## Possible improvements
