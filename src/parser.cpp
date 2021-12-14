@@ -848,10 +848,8 @@ void FJP::Parser::processRepeatUntil() {
     token = lexer->getNextToken();
     processCondition();
 
-    // If the result of condition is true (1) jump to the first address
+    // If the result of condition is false (0) jump to the first address
     // of the body of the repeat-until loop.
-    generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0});
-    generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_EQ});
     generatedCode.addInstruction({FJP::OP_CODE::JPC, 0, repeatUntilStart });
 
     // ')'
