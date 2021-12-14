@@ -304,7 +304,7 @@ void FJP::Parser::processVariable(int &frameVariableCount) {
             token = lexer->getNextToken();
 
             // '='
-            if (token.tokenType == FJP::TokenType::EQUALS) {
+            if (token.tokenType == FJP::TokenType::CONST_INIT) {
                 // '{'
                 token = lexer->getNextToken();
                 if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
