@@ -20,4 +20,4 @@ clean:
 	rm -rf $(BIN) $(TARGET) || true
 	rm stacktrace.txt || true
 	rm tokens.json || true
-	rm code.pl0-asm || true
+	rm code.pl0 || true
