@@ -10,22 +10,22 @@
   * [tokens.json](#tokensjson)
   * [code.pl0](#codepl0)
   * [stacktrace.txt](#stacktracetxt)
-- [Features supported by our programming language](#features-supported-by-our-programming-language)
-  * [Grammar](#grammar)
+- [Grammar](#grammar)
+- [Supported features](#supported-features)
 - [Implementation](#implementation)
-- [Possible improvements](#possible-improvements)
+- [Conclusion](#conclusion)
 
 ## Introduction
 
 Within this module, we decided to implement a compiler for a **programming language of our own**. The syntax of our programming language is based off of PL0 and may slightly resemble the C programming language. As an outcome of this project, we compile source code written in our programming language into an extended/customized version of the **PL0 instruction set** (https://en.wikipedia.org/wiki/PL/0). Also, in order to test the correctness of the compiler, we decided to implement a **virtual machine** that executes the compiled code, so we can see and analyze the output.
 
-As for the programming language, we decided to go with **C++** without the use of any external libraries such as Bison (https://www.gnu.org/software/bison/) or ANTRL (https://www.antlr.org/). This decision was made by the fact that we wanted to put the knowledge obtained from the lectures into practice and implement the recursive descent algorithm on our own.
+As for the programming language, in which we implemented the compiler, we decided to go with **C++** without the use of any external libraries such as Bison (https://www.gnu.org/software/bison/) or ANTRL (https://www.antlr.org/). This decision was made by the fact that we wanted to put the knowledge obtained from the lectures into practice and implement the recursive descent algorithm on our own.
 
 ## How to compile and run the application
 
 ### Requirements
 
-The compilation is done through the `make` command which is supposed to be executed in the root folder of the project structure. If you are on Linux, you can install make using this command `sudo apt-get install build-essential`. Alternatively, if you are on Windows, the simplest way to install make is using the `chocolatey` package manager - `choco install make` (https://chocolatey.org/install).
+The compilation is done through the `make` command that is supposed to be executed in the root folder of the project structure. If you are on Linux, you can install make using this command `sudo apt-get install build-essential`. Alternatively, if you are on Windows, the simplest way to install make is using the `chocolatey` package manager - `choco install make` (https://chocolatey.org/install).
 
 ### Compilation
 
@@ -75,7 +75,7 @@ Usage:
   -h, --help   print help
 ```
 
-For example, if you only were to compile the code, see the instructions and not execute it, you would run the application with the `-d` option. Additionally, you could add the `-r` option in order to execute the program as well. Here are some examples of you can run the application.
+For example, if you only were to compile the code, see the instructions and not execute them, you would run the application with the `-d` option. Additionally, you could add the `-r` option in order to execute the program as well. Here are some examples of how you can run the application.
 
 ```
 ./fjp my-program --debug
@@ -112,9 +112,13 @@ function foo() {
 END
 ```
 
+```
+./fjp my-program -dr
+```
+
 ### tokens.json
 
-This fill will contain all tokens recognized and parsed from the input file. The format of the file is JSON. As far as the example is concerned, the content of the file would look like this:
+This file contains all tokens recognized and parsed from the input file. The format of the file is JSON. As far as the example is concerned, the content of the file should look like this:
 
 ```
 [{
@@ -155,7 +159,7 @@ This fill will contain all tokens recognized and parsed from the input file. The
 
 ### code.pl0
 
-The instructions into which the source code has been compiled look like this. The first column represents the address the instruction sits at. This is comes in handy when analyzing jump instructions, conditional jumps, function calls, etc.
+The instructions into which the source code has been compiled look as shown below. The first column represents the address the instruction sits at. This is comes in handy when analyzing jump instructions, conditional jumps, function calls, etc.
 
 ```
 [#000] INC 0 5
@@ -244,15 +248,11 @@ initial values			0	1	0
 19	OPR	0	0	0	0	0	
 ```
 
-On the left side, we can see the instruction that's currently being executed. We can also see the content of registers `EIP`, `EBP`, and `ESP`. On the right side, we can see the current content of the stack. Every function call (every frame) is separated by the `|` symbol.
+On the left-hand side, we can see the instruction that's currently being executed. We can also see the content of registers `EIP`, `EBP`, and `ESP`. On the-right hand side, we can see the current content of the stack. Every function call (every frame) is separated by the `|` symbol.
 
-## Features supported by our programming language
+## Grammar
 
-This section describes all features we implemented in our programming language.
-
-### Grammar
-
-A more formal way of defining the way you should write a program in our programming language could be seen below. However, we believe that is description might be rather too complex to see what you can and what you cannot do.
+A more formal way to define the way you should write a program in our programming language could be seen below. However, we believe that is description might be rather too complex to see what you can and what you cannot do.
 
 ```
 <program> --> 'START' <block> 'END'
@@ -298,6 +298,8 @@ A more formal way of defining the way you should write a program in our programm
 <write> --> 'write' '(' <ident> ')' ';'
 ```
 
+## Supported features
+
 In order to make things simpler to understand, we provide a list of every feature available within our programming language. Overall, we support the following:
 
 * definition of integer variables
@@ -332,7 +334,8 @@ In order to make things simpler to understand, we provide a list of every featur
 
 ---
 
+Every single feature is described in more detail within the next sections.
 
 ## Implementation
 
-## Possible improvements
+## Conclusion
