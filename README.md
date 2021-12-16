@@ -338,4 +338,17 @@ Every single feature is described in more detail within the next sections.
 
 ## Implementation
 
+As mentioned previously, the whole application is written in `C++`. The project structure can be seen below.
+
+```
+.
+├── examples    # contains program examples
+├── grammar     # contains a .txt file with the definition of our grammar
+├── include     # header files (.h)
+├── lib         # static header libraries
+├── Makefile    # Makefile to compile the application
+├── README.md   # This README file
+└── src         # source (.cpp) files
+```
+
 ## Conclusion
