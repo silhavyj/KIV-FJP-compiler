@@ -1,12 +1,17 @@
 #include <cassert>
 #include <fstream>
-#include <iomanip>
 #include <list>
 
 #include <logger.h>
 #include <isa.h>
 #include <parser.h>
 #include <errors.h>
+
+#define PRINT_ADDRESSES
+
+#ifdef PRINT_ADDRESSES
+# include <iomanip>
+#endif
 
 FJP::Parser *FJP::Parser::instance = nullptr;
 
@@ -71,7 +76,11 @@ void FJP::Parser::storeCodeInstructionsIntoFile() {
 
     // Store the generated code into the file.
     for (int i = 0; i < generatedCode.getSize(); i++) {
-        file << "[#" << std::setw(ADDRESS_LEN) << std::setfill('0') << i << "] " << generatedCode[i];
+        file
+             #ifdef  PRINT_ADDRESSES
+                << "[#" << std::setw(ADDRESS_LEN) << std::setfill('0') << i << "] "
+             #endif
+             << generatedCode[i];
         if (i < generatedCode.getSize() - 1) {
             file << "\n";
         }
