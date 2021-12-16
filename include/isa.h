@@ -14,7 +14,6 @@ namespace FJP {
         STO,     ///< Stores a value from the top of the stack to a particular address.
         CAL,     ///< Calls a function.
         INC,     ///< Allocates 'x' positions (slots/variables) on the stack.
-        DEC,     ///< Deallocates 'x' positions (slots/variables) off the stack.
         JMP,     ///< Jumps to an address.
         JPC,     ///< Conditional jump. It jumps if there is a 1 on the top of the stack (result of an operation).
         SIO,     ///< System I/O operation (read/write).

@@ -993,7 +993,7 @@ void FJP::Parser::processForeach() {
     generatedCode[exitForeachAddress].m = generatedCode.getSize();
 
     // Remove the temporary variable (index) off the stack.
-    generatedCode.addInstruction({FJP::OP_CODE::DEC, 0, 1});
+    generatedCode.addInstruction({FJP::OP_CODE::INC, 0, -1});
 }
 
 // for ( <assignment> ; <condition> ; <assignment> ) <statement>

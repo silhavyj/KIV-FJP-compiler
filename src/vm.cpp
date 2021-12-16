@@ -111,9 +111,6 @@ void FJP::VirtualMachine::execute() {
         case STA:
             execute_STA(instruction.l, instruction.m);
             break;
-        case DEC:
-            execute_DEC(instruction.l, instruction.m);
-            break;
     }
     if (debug) {
         // Print out the current values of all three registers.
@@ -301,20 +298,6 @@ void FJP::VirtualMachine::execute_INC(int l, int m) {
 
     // Allocate 'm' spots on the stack.
     ESP = ESP + m;
-}
-
-void FJP::VirtualMachine::execute_DEC(int l, int m) {
-    // Just so the compiler doesn't complain about an unused value.
-    (void)l;
-
-    // Make sure that there is at least the number of elements on
-    // the stack that we want to reduce it by
-    if (ESP - m < 0) {
-        FJP::exitProgramWithError(FJP::RuntimeErrors::ERROR_00, ERROR_CODE);
-    }
-
-    // Reduce the size of the stack (the opposite of INC)
-    ESP = ESP - m;
 }
 
 void FJP::VirtualMachine::execute_JMP(int l, int m) {
