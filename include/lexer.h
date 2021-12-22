@@ -84,7 +84,7 @@ namespace FJP {
         /// the validation_fce is satisfied. For example, this is used
         /// when parsing numbers or variable names - keep consuming
         /// characters as long as they are digits.
-        /// \param validation_fce validation function used to consume characters
+        /// param validation_fce validation function used to consume characters
         /// \return the result of the consumption of the input characters (name, number, ...)
         std::string getValue(int (validation_fce)(int));
 

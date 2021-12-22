@@ -94,7 +94,7 @@ namespace FJP {
         void addSymbol(FJP::Symbol symbol);
 
         /// Returns a list of all frames currently held in the symbol table.
-        /// \Return std::list of frames
+        /// \return std::list of frames
         std::list<FJP::Frame> &getFrames();
 
         /// Returns the current depth/level. The depth depends on how many functions
