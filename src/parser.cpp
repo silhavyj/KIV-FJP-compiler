@@ -1666,10 +1666,12 @@ void FJP::Parser::processRead() {
 }
 
 void FJP::Parser::processWrite() {
+    // 'write'
     if (token.tokenType != FJP::TokenType::WRITE) {
         return;
     }
 
+    // '('
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_12, ERR_CODE, token.lineNumber);
@@ -1677,37 +1679,49 @@ void FJP::Parser::processWrite() {
 
     int number;
     FJP::Symbol symbol;
-    token = lexer->getNextToken();
 
+    token = lexer->getNextToken();
     switch (token.tokenType) {
+        // <identifier>
         case FJP::TokenType::IDENTIFIER:
+            // Make sure that the identifier has been declared (exists in the symbol table).
             symbol = symbolTable.findSymbol(token.value);
             if (symbol.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_45, ERR_CODE, token.lineNumber);
             }
 
+            // Check out the type of the identifier.
             switch (symbol.symbolType) {
+                // <int/bool>
                 case FJP::SymbolType::SYMBOL_INT:
                 case FJP::SymbolType::SYMBOL_BOOL:
                     generatedCode.addInstruction({FJP::OP_CODE::LOD, symbolTable.getDepthLevel() - symbol.level, symbol.address});
                     break;
+
+                // <int[]/bool[]>
                 case FJP::SymbolType::SYMBOL_INT_ARRAY:
                 case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
+                    // '['
                     token = lexer->getNextToken();
                     if (token.tokenType != FJP::TokenType::LEFT_SQUARED_BRACKET) {
                         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_17, ERR_CODE, token.lineNumber);
                     }
-                    token = lexer->getNextToken();
 
+                    // <expression>
+                    token = lexer->getNextToken();
                     processExpression();
+
+                    // Calculate the address of the element (base + offset).
                     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.address});
                     generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS});
                     generatedCode.addInstruction({FJP::OP_CODE::LDA, symbolTable.getDepthLevel() - symbol.level, 0});
 
+                    // ']'
                     if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
                         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_16, ERR_CODE, token.lineNumber);
                     }
                     break;
+                // <const>
                 case FJP::SymbolType::SYMBOL_CONST:
                     generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.value});
                     break;
@@ -1716,10 +1730,12 @@ void FJP::Parser::processWrite() {
                     break;
             }
             break;
+        // <number>
         case FJP::TokenType::NUMBER:
             number = atoi(token.value.c_str());
             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, number});
             break;
+        // <true/false>
         case FJP::TokenType::TRUE:
         case FJP::TokenType::FALSE:
             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, token.tokenType == FJP::TokenType::TRUE});
@@ -1728,15 +1744,22 @@ void FJP::Parser::processWrite() {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_30, ERR_CODE, token.lineNumber);
             break;
     }
+
+    // Print off the value from the top of the stack.
     generatedCode.addInstruction({FJP::OP_CODE::SIO, 0, FJP::SIO_TYPE::SIO_WRITE});
 
+    // ')'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
     }
+
+    // ';'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
     }
+
+    // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
 }
