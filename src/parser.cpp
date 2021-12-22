@@ -1576,50 +1576,70 @@ void FJP::Parser::processFactor() {
 }
 
 void FJP::Parser::processRead() {
+    // 'read'
     if (token.tokenType != FJP::TokenType::READ) {
         return;
     }
+
+    // '('
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::LEFT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_12, ERR_CODE, token.lineNumber);
     }
+
+    // <identifier>
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_44, ERR_CODE, token.lineNumber);
     }
+
+    // Make sure that the identifier exists in the symbol table.
     FJP::Symbol symbol = symbolTable.findSymbol(token.value);
     if (symbol.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_45, ERR_CODE, token.lineNumber);
     }
 
+    // Check out the type of the identifier.
     switch (symbol.symbolType) {
+        // int
         case FJP::SymbolType::SYMBOL_INT:
             generatedCode.addInstruction({FJP::OP_CODE::SIO, 0, FJP::SIO_TYPE::SIO_READ});
             generatedCode.addInstruction({FJP::OP_CODE::STO, symbolTable.getDepthLevel() - symbol.level, symbol.address});
             break;
+        // bool
         case FJP::SymbolType::SYMBOL_BOOL:
             generatedCode.addInstruction({FJP::OP_CODE::SIO, 0, FJP::SIO_TYPE::SIO_READ});
             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0 });
+
+            // Convert an integer into a boolean (1/0).
             generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
             generatedCode.addInstruction({FJP::OP_CODE::STO, symbolTable.getDepthLevel() - symbol.level, symbol.address});
             break;
+        // array
         case FJP::SymbolType::SYMBOL_INT_ARRAY:
         case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
+            // '['
             token = lexer->getNextToken();
             if (token.tokenType != FJP::TokenType::LEFT_SQUARED_BRACKET) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_17, ERR_CODE, token.lineNumber);
             }
+
+            // <expression>
             token = lexer->getNextToken();
             processExpression();
+
+            // Calculate the address of the element (base + offset).
             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.address });
             generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS });
             generatedCode.addInstruction({FJP::OP_CODE::SIO, 0, FJP::SIO_TYPE::SIO_READ});
 
+            // If it is an array of booleans, interpret the numbers as booleans (1/0).
             if (symbol.symbolType == FJP::SymbolType::SYMBOL_BOOL_ARRAY) {
                 generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0 });
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
             }
 
+            // ']'
             generatedCode.addInstruction({FJP::OP_CODE::STA, symbolTable.getDepthLevel() - symbol.level, 0});
             if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_16, ERR_CODE, token.lineNumber);
@@ -1629,14 +1649,19 @@ void FJP::Parser::processRead() {
             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_41, ERR_CODE, token.lineNumber);
             break;
     }
+    // ')'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
     }
+
+    // ';'
     token = lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::SEMICOLON) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_15, ERR_CODE, token.lineNumber);
     }
+
+    // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
 }
 
