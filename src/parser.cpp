@@ -1458,38 +1458,41 @@ void FJP::Parser::processTerm() {
     }
 }
 
-// <number>
-// <const>
-// <identifier>
-// <true/false>
-// ( <expression> )
 void FJP::Parser::processFactor() {
     FJP::Symbol symbol;
     int numberValue;
     bool nextToken = true;
 
     switch (token.tokenType) {
+        // <identifier>
         case FJP::TokenType::IDENTIFIER:
+            // Make sure the identifier exists within the symbol table.
             symbol = symbolTable.findSymbol(token.value);
             if (symbol.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_45, ERR_CODE, token.lineNumber);
             }
+            // Check if the next token is 'instanceof'
             token = lexer->getNextToken();
             if (token.tokenType == FJP::TokenType::INSTANCEOF) {
                 token = lexer->getNextToken();
                 switch (token.tokenType) {
+                    // instanceof 'int'
                     case FJP::TokenType::INT:
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.symbolType == FJP::SYMBOL_INT});
                         break;
+                    // instanceof 'bool'
                     case FJP::TokenType::BOOL:
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.symbolType == FJP::SYMBOL_BOOL});
                         break;
+                    // instanceof 'int[]'
                     case FJP::TokenType::INT_ARRAY:
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.symbolType == FJP::SYMBOL_INT_ARRAY});
                         break;
+                    // instanceof 'bool[]'
                     case FJP::TokenType::BOOL_ARRAY:
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.symbolType == FJP::SYMBOL_BOOL_ARRAY});
                         break;
+                    // instanceof 'function'
                     case FJP::TokenType::FUNCTION:
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.symbolType == FJP::SYMBOL_FUNCTION});
                         break;
@@ -1498,25 +1501,40 @@ void FJP::Parser::processFactor() {
                         break;
                 }
             } else {
+                // Do not load up the next token.
                 nextToken = false;
+
+                // Check the type of the identifier
                 switch (symbol.symbolType) {
+                    // <int/bool>
                     case FJP::SymbolType::SYMBOL_INT:
                     case FJP::SymbolType::SYMBOL_BOOL:
                         generatedCode.addInstruction({FJP::OP_CODE::LOD, symbolTable.getDepthLevel() - symbol.level, symbol.address});
                         break;
+                    // <const>
                     case FJP::SymbolType::SYMBOL_CONST:
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.value});
                         break;
+                    // <int[]/bool[]>
                     case FJP::SymbolType::SYMBOL_INT_ARRAY:
                     case FJP::SymbolType::SYMBOL_BOOL_ARRAY:
+                        // '['
                         if (token.tokenType != FJP::TokenType::LEFT_SQUARED_BRACKET) {
                             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_17, ERR_CODE, token.lineNumber);
                         }
+
+                        // <expression>
                         token = lexer->getNextToken();
                         processExpression();
+
+                        // Calculate the address of the element within the array. Add up the base address and the index.
                         generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, symbol.address});
                         generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_PLUS});
+
+                        // Load the value to the top of the stack.
                         generatedCode.addInstruction({FJP::OP_CODE::LDA, symbolTable.getDepthLevel() - symbol.level, 0});
+
+                        // ']'
                         if (token.tokenType != FJP::TokenType::RIGHT_SQUARED_BRACKET) {
                             FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_16, ERR_CODE, token.lineNumber);
                         }
@@ -1528,17 +1546,22 @@ void FJP::Parser::processFactor() {
                 }
             }
             break;
+        // <number>
         case FJP::TokenType::NUMBER:
             numberValue = atoi(token.value.c_str());
             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, numberValue});
             break;
+        // <true/false>
         case FJP::TokenType::TRUE:
         case FJP::TokenType::FALSE:
             generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, token.tokenType == FJP::TokenType::TRUE});
             break;
+        // '('
         case FJP::TokenType::LEFT_PARENTHESIS:
+            // <expression>
             token = lexer->getNextToken();
             processExpression();
+            // ')'
             if (token.tokenType != FJP::TokenType::RIGHT_PARENTHESIS) {
                 FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_13, ERR_CODE, token.lineNumber);
             }
