@@ -29,12 +29,17 @@
   * [Else branch of an if statement](#else-branch-of-an-if-statement)
   * [Data type boolean and logical operations with it](#data-type-boolean-and-logical-operations-with-it)
   * [Branching condition (switch, case)](#branching-condition--switch--case-)
+  * [Multi-assignment (a = b = c = d = 3;)](#multi-assignment--a---b---c---d---3--)
+  * [Conditional assignment / ternary operator (min = (a < b) ? a : b;)](#conditional-assignment---ternary-operator--min----a---b----a---b--)
+  * [Commands for input and output (read, write - needs appropriate instructions to be used)](#commands-for-input-and-output--read--write---needs-appropriate-instructions-to-be-used-)
+  * [GOTO command (watch out for remote jumps)](#goto-command--watch-out-for-remote-jumps-)
+  * [Array and working with its elements](#array-and-working-with-its-elements)
+  * [Instanceof operator](#instanceof-operator)
 - [Project layout](#project-layout)
   * [UML diagram of the structure of the lexer](#uml-diagram-of-the-structure-of-the-lexer)
   * [UML diagram of the structure of the parser](#uml-diagram-of-the-structure-of-the-parser)
   * [UML diagram of the structure of the VirtualMachine](#uml-diagram-of-the-structure-of-the-virtualmachine)
 - [Conclusion](#conclusion)
-
 ## Introduction
 
 Within this module, we decided to implement a compiler for a **programming language of our own**. The syntax of our programming language is based off of PL0 and may slightly resemble the C programming language. As an outcome of this project, we compile source code written in our programming language into an extended/customized version of the **PL0 instruction set** (https://en.wikipedia.org/wiki/PL/0). Also, in order to test the correctness of the compiler, we decided to implement a **virtual machine** that executes the compiled code, so we can see and analyze the output.
@@ -598,6 +603,104 @@ A boolean variable is considered to be `true` if and only if the corresponding i
 
 ### Branching condition (switch, case)
 
+```
+x:=0;
+lbl:
+switch(x) {
+    case 0:
+        x:=15;
+    case 1:
+        x:=2;
+        break;
+    case 3:
+        x:=5;
+        break;
+    case 15:
+        {
+            x:=3;
+            goto lbl;
+        }
+        break;
+}
+```
+Only a variable can be passed into a switch statements - either an integer or a boolean. Internally, we keep jumping over cases until we find one that matches the current value of the control variable. Then, we execute the body of the case. Each can may also contain a `break` instruction which causes immediate termination of the switch statements. If the control value is modified within the body of a case statements. Its new value will be used when searching for another case that matches the value. This, of course, will not take place if a break statements is present.
+
+### Multi-assignment (a = b = c = d = 3;)
+
+Within out programming language, we also supposed multi-assignment. The variables on the left side are supposed to be primitive data types - integers or booleans. This will not work with array elements. As in a normal assignment, you're required to use the `:=` character. After the very last variable, an expression must follow.
+
+```
+a := d := b := c := ((((15 / 5) - 2/2)*5)/g[0/30])*(g instanceof );
+```
+
+All variables a, d, b, c will be assigned the same value, which is the final result of the expression.
+
+### Conditional assignment / ternary operator (min = (a < b) ? a : b;)
+
+Another feature we decided to implement is a ternary operator.
+
+```
+ x := # 15 > 0 ? 15 - 3 : 101* 2 + 1;
+```
+
+In order to distinguish between an assignment and a ternary operator, you must prefix the ternary operator with a hash symbol. That way the parser will know that what follows next should be parsed as a ternary operator. The condition is terminated by a `?` symbol, and the expressions are separated using the `:` symbol.
+
+### Commands for input and output (read, write - needs appropriate instructions to be used)
+
+As for reading from the standard input and printing off to standard output. We chose to use a made up `SIO` instruction. 
+
+`SIO 0 1` will print the value on the top of the stack out to the standard output. Similarly, `SIO 0 2` will read an integer value form the standard input and place it on the top of the stack. Both instructions are supported by our virtual machine. 
+
+The following program creates an array of three integers, reads all three values from the standard input and prints them out to the standard output.
+
+```
+START
+const int N = 3;
+function test() {
+    bool arr[N];
+    int i;
+    {
+        for (i := 1; i <= N; i := i + 1)
+            read(arr[i-1]);
+
+        for (i := 0; i < N; i := i + 1)
+            write(arr[i]);
+    }
+}
+{
+    call test();
+}
+END
+```
+
+### GOTO command (watch out for remote jumps)
+
+`GOTO` allows the user to jump literally anywhere they want. As a result of this behavior, this instruction is deprecated in most modern programming languages. Despite not being used very often these days, we still decided to implement it as proof of concept. It may come in handy when exiting multiple nested loops. It is the user who is responsible for all possible consequences and therefore they are strongly advised to use it wisely, or even not at all.
+
+```
+START
+{
+    goto exit;
+    exit:
+}
+END
+```
+
+```
+START
+{
+    loop:
+    goto loop;
+}
+END
+```
+
+The second example represents an infinite loop.
+
+### Array and working with its elements
+
+### Instanceof operator
+
 ## Project layout
 
 ```
@@ -663,4 +766,4 @@ the recursive descent algorithm on AST, and `VM` (virtual machine), which perfor
 We created a several test programs in order to test out the functionality of the compiler. All features work as 
 expected. However, some potential enhancements would be welcomed as well. For instance, the input file should be 
 read as a stream of bytes instead of loading up the entire file into RAM. This could become an issue as far as larger 
-files are concerned. Also, we would like to add some other features into the programming language such as dynamic allocations or working with strings. Overall, out of all features we picked out for implementation, we manage to accomplish all of them. For more information on the implementation, please check out `doxygen/html/index.html`.
+files are concerned. Also, we would like to add some other features into the programming language such as dynamic allocations or working with strings. Overall, out of all features we picked out for implementation, we managed to accomplish all of them. For more information on the implementation, please check out `doxygen/html/index.html`.
