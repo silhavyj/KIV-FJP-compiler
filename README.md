@@ -263,7 +263,7 @@ On the left-hand side, we can see the instruction that's currently being execute
 
 ## Grammar
 
-A more formal way to define the way you should write a program in our programming language could be seen below. However, we believe that is description might be rather too complex to see what you can and what you cannot do.
+A more formal way to define the way you should write a program in our programming language could be seen below.
 
 ```
 <program> --> 'START' <block> 'END'
@@ -311,7 +311,7 @@ A more formal way to define the way you should write a program in our programmin
 
 ## Supported features
 
-In order to make things simpler to understand, we provide a list of every enhancement available within our programming language. Overall, we support the following:
+In order to make things simpler to understand, we provide a list of every feature available within our programming language. Overall, we support the following:
 
 * definition of integer variables
 * definition of integer constants
@@ -445,7 +445,7 @@ while ((15 + x) >= y) {
 
 ### Simple condition (if without else)
 
-The way we implemented an `if` statements is the same as other programming languages do it. In general, an `if` statements has a similar syntax as a `while`. It expects a condition to be passed in.
+The way we implemented an `if` statement is the same as other programming languages do it. In general, an `if` statement has a similar syntax to a `while`. It expects a condition to be passed in.
 
 ```
 if (x != 15) {
@@ -470,5 +470,61 @@ function foo() {
     .
     .
 }
+
+call foo();
 ```
-There aren't any parameters being passed into the function nor any return values. Hence, every function is technically a void function that returns no parameters.
+There aren't any parameters being passed into the function nor any return values. Hence, every function is 
+technically a void function that returns no parameters. As shown below, we do allow nested functions.
+
+```
+START
+function A() {
+    function B() {
+        function C() {
+            write(155);
+        }
+        call C();
+    }
+    call B();
+}
+
+call A();
+END
+```
+
+Every function can hold its constants and variables that are visible only to its nested functions.
+
+---
+
+### For loop
+
+The syntax of our `for` loop is also fairly similar to programming languages such as Java or C/C++. The variable which is used to iterate within the for loop must be declared beforehand. You're not allowed to declare a variable in the for loop itself.
+
+```
+for (j := 1; j < 4; j := j + 1)
+    write(arr[j-1]);
+```
+
+### Do-while loop
+
+Unlike other loops, the do-while loop requires the use of curly brackets. As you may want to add multiple statements into the body of the loop, you may as well need to add an additional pair of curly brackets. This is a result of the fact that each loop expects one statement provided in its body. If you want to add multiple statements you're required to wrap them into a pair of curly brackets.
+
+```
+iterations := 2;
+do {{
+    call foo();
+    iterations := iterations - 1;
+}} while (iterations > 0);
+```
+
+### Repeat-until loop
+
+A repeat-until loop is almost the same as a do-while loop. The only difference is in how `while` and `until` are interpreted. A do-while loop keeps on executing its body as long as the while condition is satisfied. A repeat-until loop keeps on executing its body for as long as its until condition is NOT satisfied. From an implementation point of view, this was implemented by inverting the result of the condition on the top of the stack.
+
+```
+x := 0;
+repeat {{
+    write(x);
+    x := x + 1;
+}} until (x != 15);
+```
