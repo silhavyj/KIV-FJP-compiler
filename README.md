@@ -27,6 +27,13 @@
   * [Repeat-until loop](#repeat-until-loop)
   * [Foreach loop](#foreach-loop)
   * [Else branch of an if statement](#else-branch-of-an-if-statement)
+  * [Data type boolean and logical operations with it](#data-type-boolean-and-logical-operations-with-it)
+  * [Branching condition (switch, case)](#branching-condition--switch--case-)
+- [Project layout](#project-layout)
+  * [UML diagram of the structure of the lexer](#uml-diagram-of-the-structure-of-the-lexer)
+  * [UML diagram of the structure of the parser](#uml-diagram-of-the-structure-of-the-parser)
+  * [UML diagram of the structure of the VirtualMachine](#uml-diagram-of-the-structure-of-the-virtualmachine)
+- [Conclusion](#conclusion)
 
 ## Introduction
 
