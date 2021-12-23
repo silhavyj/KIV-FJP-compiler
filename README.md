@@ -5,21 +5,29 @@
   * [Requirements](#requirements)
   * [Compilation](#compilation)
   * [Execution](#execution)
-- [Different options to run the application](#different-options-to-run-the-application)
+    + [Different options to run the application](#different-options-to-run-the-application)
 - [Debug outputs of the program](#debug-outputs-of-the-program)
   * [tokens.json](#tokensjson)
   * [code.pl0](#codepl0)
   * [stacktrace.txt](#stacktracetxt)
 - [Grammar](#grammar)
 - [Supported features](#supported-features)
-- [Implementation](#implementation)
-- [Conclusion](#conclusion)
+- [Descriptions & examples of implemented features](#descriptions---examples-of-implemented-features)
+  * [Comments](#comments)
+  * [Identifiers](#identifiers)
+  * [Definition of integer/bool constants](#definition-of-integer-bool-constants)
+  * [Definition of integer/bool variables](#definition-of-integer-bool-variables)
+  * [Assignment](#assignment)
+  * [Basic arithmetic and logic](#basic-arithmetic-and-logic)
+  * [Loop (arbitrary)](#loop--arbitrary-)
+  * [Simple condition (if without else)](#simple-condition--if-without-else-)
+  * [Definition of a subroutine (procedure, function, method) and its call](#definition-of-a-subroutine--procedure--function--method--and-its-call)
 
 ## Introduction
 
 Within this module, we decided to implement a compiler for a **programming language of our own**. The syntax of our programming language is based off of PL0 and may slightly resemble the C programming language. As an outcome of this project, we compile source code written in our programming language into an extended/customized version of the **PL0 instruction set** (https://en.wikipedia.org/wiki/PL/0). Also, in order to test the correctness of the compiler, we decided to implement a **virtual machine** that executes the compiled code, so we can see and analyze the output.
 
-As for the programming language, in which we implemented the compiler, we decided to go with **C++** without the use of any external libraries such as Bison (https://www.gnu.org/software/bison/) or ANTRL (https://www.antlr.org/). This decision was made by the fact that we wanted to put the knowledge obtained from the lectures into practice and implement the recursive descent algorithm on our own.
+As for the programming language, in which the compiler was implemented, we decided to go with **C++** without the use of any external libraries such as Bison (https://www.gnu.org/software/bison/) or ANTRL (https://www.antlr.org/). This decision was made by the fact that we wanted to put the knowledge obtained from the lectures into practice and implement the recursive descent algorithm on our own.
 
 ## How to compile and run the application
 
@@ -41,7 +49,7 @@ Similarly, if you want to clean everything, you can simply type `make clean`.
 make clean
 ```
 
-This will erase all files what were created upon successful compilation. Furthermore, it will also delete all files created by the application itself (if run with the `--debug` option).
+This will erase all files that were created upon successful compilation. Furthermore, it will also delete all files created by the application itself (if run with the `--debug` option).
 
 ### Execution
 
@@ -56,9 +64,9 @@ ERR: Input file is not specified!
 
 If you get the error message shown above, you have successfully built the application.
 
-## Different options to run the application
+#### Different options to run the application
 
-As suggested by the error shown above, the application expects an input file to be provided by the user. However, if you do so, nothing happens. You can use `--help` to check out what options the application supports.
+As suggested by the error shown above, the application expects an input file to be provided by the user. However, if you do so, nothing happens (see further down below). You can use `--help` to check out what options the application supports.
 
 ```
 ./fjp --help
@@ -75,7 +83,7 @@ Usage:
   -h, --help   print help
 ```
 
-For example, if you only were to compile the code, see the instructions and not execute them, you would run the application with the `-d` option. Additionally, you could add the `-r` option in order to execute the program as well. Here are some examples of how you can run the application.
+For example, if you only were to compile the code, see the output instructions and not execute them, you would run the application with the `-d` option. Additionally, you could add the `-r` option in order to execute the program as well. Here are some examples of how you can run the application.
 
 ```
 ./fjp my-program --debug
@@ -88,7 +96,7 @@ Parsing these parameters was tacked with the help of this library https://github
 
 ## Debug outputs of the program
 
-If the application is run with the `--debug` option. The following files will be generated. As an example, consider the following piece of code written in our programming language (my-program).
+If the application is run with the `--debug` option. The following files will be generated. As an example, consider the following piece of code written in our custom programming language (my-program).
 
 ```
 START
@@ -111,6 +119,7 @@ function foo() {
 
 END
 ```
+This program recursively prints out numbers 0, 1, and 2.
 
 ```
 ./fjp my-program -dr
@@ -157,9 +166,11 @@ This file contains all tokens recognized and parsed from the input file. The for
 
 ```
 
+Each record is made up of `typeId`, which represents the id of the token, `type`, which is the text representation of the token, `lineNumber`, which indicates the line the token was found on, and lastly, `value`, which holds the value of the token - used when it's a number or an identifier.
+
 ### code.pl0
 
-The instructions into which the source code has been compiled look as shown below. The first column represents the address the instruction sits at. This is comes in handy when analyzing jump instructions, conditional jumps, function calls, etc.
+The instructions into which the source code has been compiled look as shown below. The first column represents the address the instruction sits at. This is comes in handy when analyzing jump instructions, conditional jumps, function calls, etc. This additional information can be turned off by commenting out line 10 in `src/parser.cpp` - `#define PRINT_ADDRESSES`.
 
 ```
 [#000] INC 0 5
@@ -300,12 +311,12 @@ A more formal way to define the way you should write a program in our programmin
 
 ## Supported features
 
-In order to make things simpler to understand, we provide a list of every feature available within our programming language. Overall, we support the following:
+In order to make things simpler to understand, we provide a list of every enhancement available within our programming language. Overall, we support the following:
 
 * definition of integer variables
 * definition of integer constants
 * assignment
-* basic arithmetic and logic (+, -, *, /, AND, OR, negation and parentheses, operators for comparing numbers) loop (arbitrary)
+* basic arithmetic and logic (+, -, *, /, AND, OR, negation and parentheses, operators for comparing numbers)
 * loop (arbitrary)
 * simple condition (if without else)
 * definition of a subroutine (procedure, function, method) and its call
@@ -319,7 +330,7 @@ In order to make things simpler to understand, we provide a list of every featur
 * else
 * data type boolean and logical operations with it
 * branching condition (switch, case)
-* multiple assignment (a = b = c = d = 3;)
+* multi-assignment (a = b = c = d = 3;)
 * conditional assignment / ternary operator (min = (a < b) ? a : b;)
 * commands for input and output (read, write - needs appropriate instructions to be used)
 
@@ -336,19 +347,128 @@ In order to make things simpler to understand, we provide a list of every featur
 
 Every single feature is described in more detail within the next sections.
 
-## Implementation
+## Descriptions & examples of implemented features
 
-As mentioned previously, the whole application is written in `C++`. The project structure can be seen below.
+Every program is encapsulated by the `START` and `END` symbols. Each program must contain at least one statement - check out folder `examples`. Therefore, the shortest program you can create using out programming language looks like this:
 
 ```
-.
-├── examples    # contains program examples
-├── grammar     # contains a .txt file with the definition of our grammar
-├── include     # header files (.h)
-├── lib         # static header libraries
-├── Makefile    # Makefile to compile the application
-├── README.md   # This README file
-└── src         # source (.cpp) files
+START
+;
+END
 ```
 
-## Conclusion
+```
+[#000] INC 0 4
+[#001] JMP 0 2
+[#002] OPR 0 0
+```
+
+### Comments
+
+We do support comments in our programming language. However, there are no single-line comments. If you want to comment something out, you're required to use the `/*` ... `*\` syntax.
+
+### Identifiers
+
+An identifier follows the same rules as in, for example, the C programming language. These rules are laid out as:
+    
+   - an identifier cannot start with a number
+   - an identifier must contain at least one character
+   - an identifier must consist of only upper-case, lower-case, numbers, or underscore characters.
+
+### Definition of integer/bool constants
+
+```
+const int x = 15, z = 155, y = 0;
+const bool test1 = false, correct = true;
+```
+
+When creating a constant variable, you must prefix it with the `const` keyword. Immediate initialization is expected as well. As for integers, you can use any positive integer including zero. Though, booleans are internally interpreted as integers (zeros/ones), you can only initialize them with `true` or `false`. Creating constant arrays is not supported either.
+
+### Definition of integer/bool variables
+
+```
+const int N = 100;
+int x, z, y, arr[2] = {1,2}, arr2[5];
+bool test1, correct, visited[1] = {true}, seen[N];
+```
+
+When creating a variable, you are not allowed to initialize it right away. You have to do it through the `assignment` statements later on. However, when creating an array you are given the option to initialize it. If you decide to do so, you must provide literals for all elements.
+
+### Assignment
+
+```
+x := 15 + 6 - 1 + correct * arr[15];
+arr[i] := arr[i+1];
+correct := false;
+```
+
+Unlike declarations, you are obligated to use the `:=` character when assigning a value (expression) to a variable. 
+You should be able to combine integers and booleans as a boolean is internally represented as an integer of a value 
+of zero or one.
+
+### Basic arithmetic and logic
+
+For this part we were strongly inspired by the PL0 programming language as described in its grammar over at https://en.wikipedia.org/wiki/PL/0.
+
+We provide basic arithmetic operations such as `+`, `-`, `*`, and `/`. You should be able to use any variables, constants or literals you want. You can also include the `instanceof` operator into an expression. Technically, the instanceof operator represents nothing but a boolean value (true/false - 1/0).
+
+As far as conditions and simple logic are concerned, we provide the following:
+
+```
+! <expression>
+<expression> == <expression>
+<expression> != <expression>
+<expression> < <expression>
+<expression> <= <expression>
+<expression> > <expression>
+<expression> => <expression>
+<expression> && <expression>
+<expression> || <expression>
+```
+
+### Loop (arbitrary)
+
+As for the arbitrary yet mandatory loop, we decided to implement a `while` loop. The syntax of a `while` loop is fairly similar to other programming languages.
+
+```
+while (!false)
+    ;
+```
+
+```
+while ((15 + x) >= y) {
+    .
+    .
+    .
+}
+```
+
+### Simple condition (if without else)
+
+The way we implemented an `if` statements is the same as other programming languages do it. In general, an `if` statements has a similar syntax as a `while`. It expects a condition to be passed in.
+
+```
+if (x != 15) {
+    .
+    .
+}
+```
+
+
+```
+if (true && false)
+    ;
+```
+
+### Definition of a subroutine (procedure, function, method) and its call
+
+Every function declaration has the following structure.
+
+```
+function foo() {
+    .
+    .
+    .
+}
+```
+There aren't any parameters being passed into the function nor any return values. Hence, every function is technically a void function that returns no parameters.
