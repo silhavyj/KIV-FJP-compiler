@@ -22,6 +22,11 @@
   * [Loop (arbitrary)](#loop--arbitrary-)
   * [Simple condition (if without else)](#simple-condition--if-without-else-)
   * [Definition of a subroutine (procedure, function, method) and its call](#definition-of-a-subroutine--procedure--function--method--and-its-call)
+  * [For loop](#for-loop)
+  * [Do-while loop](#do-while-loop)
+  * [Repeat-until loop](#repeat-until-loop)
+  * [Foreach loop](#foreach-loop)
+  * [Else branch of an if statement](#else-branch-of-an-if-statement)
 
 ## Introduction
 
@@ -519,7 +524,7 @@ do {{
 
 ### Repeat-until loop
 
-A repeat-until loop is almost the same as a do-while loop. The only difference is in how `while` and `until` are interpreted. A do-while loop keeps on executing its body as long as the while condition is satisfied. A repeat-until loop keeps on executing its body for as long as its until condition is NOT satisfied. From an implementation point of view, this was implemented by inverting the result of the condition on the top of the stack.
+A repeat-until loop is almost the same as a do-while loop. The only difference is in how `while` and `until` are interpreted. A do-while loop keeps on executing its body as long as the while condition is satisfied. A repeat-until loop keeps on executing its body for as long as its until condition is NOT satisfied. From an implementation point of view, this was tackled by inverting the result of the condition on the top of the stack.
 
 ```
 x := 0;
@@ -527,4 +532,42 @@ repeat {{
     write(x);
     x := x + 1;
 }} until (x != 15);
+```
+
+### Foreach loop
+
+A `foreach` loop is meant to be used to iterate over the elements of an array. All the user is supposed to do, is to declare a variable into which the elements will be copied as we go over the array.
+Internally, it creates a temporary index variable on the stack, so we can keep track of the index of the current elements.
+
+```
+START
+const int N = 3;
+int i, x[N] = {11,12,13};
+
+{
+    foreach (i : x)
+        ;
+    write(i);
+}
+END
+```
+
+### Else branch of an if statement
+
+An `else` statement allows branching off based on the result of the condition evaluated in the if statement. Within an else statement we can again use an if statement.
+
+```
+START
+int x;
+{
+    x:=15;
+    if (x == 0)
+        write(1);
+    else if (x == 13)
+        write(0);
+    else {
+        write(x);
+    }
+}
+END
 ```
