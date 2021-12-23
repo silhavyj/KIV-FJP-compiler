@@ -571,3 +571,7 @@ int x;
 }
 END
 ```
+
+<img src="doc/uml-01.svg" width="350" height="350">
+<img src="doc/uml-02.svg" width="500" height="450">
+<img src="doc/uml-03.svg" width="450" height="350">
