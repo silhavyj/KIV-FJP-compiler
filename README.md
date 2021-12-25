@@ -675,7 +675,7 @@ END
 
 ### GOTO command (watch out for remote jumps)
 
-`GOTO` allows the user to jump literally anywhere they want. As a result of this behavior, this instruction is deprecated in most modern programming languages. Despite not being used very often these days, we still decided to implement it as proof of concept. It may come in handy when exiting multiple nested loops. It is the user who is responsible for all possible consequences and therefore they are strongly advised to use it wisely, or even not at all.
+`GOTO` allows the user to jump literally anywhere they want. As a result of this behavior, this instruction is deprecated in most modern programming languages. Despite not being used very often these days, we still decided to implement it as proof of concept. It may come in handy when exiting multiple nested loops. It is the user who is responsible for all possible consequences, and therefore, they are strongly advised to use it cautiously.
 
 ```
 START
@@ -699,7 +699,62 @@ The second example represents an infinite loop.
 
 ### Array and working with its elements
 
+As another datatype, or rather a collection, we decided to implement arrays. An array is statically allocated on the stack and can contain 1 or more elements. There are two kinds of arrays we support, an array of booleans and an array of integers. The user must specify the size of the array when upon declaration.
+
+
+```
+const int N = 15;
+int array[10];
+bool visited[N];
+```
+
+The size of an array is supposed to be either a literal value or a constant integer. Each element of an array can be accessed via an index surrounded squared brackets, as known from other programming languages.
+
+```
+write(array[1]);
+read(array[i+1]);
+x := array[0] + array[x+1];
+```
+Furthermore, when creating an array, the user is given the option to initialize it with default elements. 
+
+```
+int nodes[5] = {1,2,3,4,5};
+```
+
 ### Instanceof operator
+
+The instanceof operator is used to find out if a variable is of a certain type or not. For instance, we can test 
+whether `x` is of a type `function`, `array`, `int`, or `bool`. The return value is always `true` or `false`, which is then interpreted as `1` or `0`.
+
+```
+START
+bool b, c, d, e, f;
+function a() {
+
+}
+{
+    b := a instanceof bool[];
+    c := a instanceof int[];
+    d := a instanceof function;
+    e := a instanceof int;
+    f := a instanceof bool;
+
+    write(b);
+    write(c);
+    write(d);
+    write(e);
+    write(f);
+}
+END
+```
+
+```
+0
+0
+1
+0
+0
+```
 
 ## Project layout
 
