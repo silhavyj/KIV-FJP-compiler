@@ -1,0 +1,30 @@
+START
+const int MAX = 100;
+int arg, ret;
+
+function isPrime() {
+    int i;
+    {
+        ret := 1;
+        i := 2;
+
+        while (i < arg) {
+            if (arg / i * i == arg) {
+                ret := 0;
+                i := arg;
+            }
+            i := i + 1;
+        }
+    }
+}
+
+function primes() {
+    for (arg := 2; arg < MAX; arg := arg + 1) {
+        call isPrime();
+        if (ret == 1)
+            write(arg);
+    }
+}
+
+call primes();
+END
