@@ -18,9 +18,9 @@ int main(int argc, char *argv[]) {
 
     // Add options as to with what flags the application could be run.
     options.add_options()
-            ("d,debug", "generates the following files: tokens.json, code.pl0-asm, stacktrace.txt", cxxopts::value<bool>()->default_value("false"))
+            ("d,debug", "generates the following files: tokens.json, code.pl0, stacktrace.txt", cxxopts::value<bool>()->default_value("false"))
             ("r,run", "executes the program", cxxopts::value<bool>()->default_value("false"))
-            ("h,help" , "print help")
+            ("h,help" , "prints help")
             ;
 
     // Parse the arguments passed in from the terminal.

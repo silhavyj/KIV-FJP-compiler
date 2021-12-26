@@ -42,7 +42,9 @@
 - [Conclusion](#conclusion)
 ## Introduction
 
-Within this module, we decided to implement a compiler for a **programming language of our own**. The syntax of our programming language is based off of PL0 and may slightly resemble the C programming language. As an outcome of this project, we compile source code written in our programming language into an extended/customized version of the **PL0 instruction set** (https://en.wikipedia.org/wiki/PL/0). Also, in order to test the correctness of the compiler, we decided to implement a **virtual machine** that executes the compiled code, so we can see and analyze the output.
+Within this module, we decided to implement a compiler for a **programming language of our own**. The syntax of our 
+programming language is based off of PL0, and it may slightly resemble the C programming language. As an outcome of 
+this project, we compile source code written in our programming language into an extended/customized version of the **PL0 instruction set** (https://en.wikipedia.org/wiki/PL/0). Also, in order to test the correctness of the compiler, we decided to implement a **virtual machine** that executes the compiled code, so we can see and analyze the output.
 
 As for the programming language, in which the compiler was implemented, we decided to go with **C++** without the use of any external libraries such as Bison (https://www.gnu.org/software/bison/) or ANTRL (https://www.antlr.org/). This decision was made by the fact that we wanted to put the knowledge obtained from the lectures into practice and implement the recursive descent algorithm on our own.
 
@@ -94,13 +96,14 @@ FJP compiler
 Usage:
   ./fjp <input> [OPTION...]
 
-  -d, --debug  generates the following files: tokens.json, code.pl0-asm, 
+  -d, --debug  generates the following files: tokens.json, code.pl0, 
                stacktrace.txt
   -r, --run    executes the program
-  -h, --help   print help
+  -h, --help   prints help
 ```
 
-For example, if you only were to compile the code, see the output instructions and not execute them, you would run the application with the `-d` option. Additionally, you could add the `-r` option in order to execute the program as well. Here are some examples of how you can run the application.
+For example, if you only were to compile the code, see the output instructions, and not execute them, you would run 
+the application with the `-d` option. Additionally, you could add the `-r` option in order to execute the program as well. Here are some examples of how you can run the application.
 
 ```
 ./fjp my-program --debug
@@ -183,11 +186,15 @@ This file contains all tokens recognized and parsed from the input file. The for
 
 ```
 
-Each record is made up of `typeId`, which represents the id of the token, `type`, which is the text representation of the token, `lineNumber`, which indicates the line the token was found on, and lastly, `value`, which holds the value of the token - used when it's a number or an identifier.
+Each record is made up of `typeId`, which represents the id of a token, `type`, which is the text representation of 
+a token, `lineNumber`, which indicates the line the token was found on, and lastly, `value`, which holds the value 
+of a token - used when it's a number or an identifier.
 
 ### code.pl0
 
-The instructions into which the source code has been compiled look as shown below. The first column represents the address the instruction sits at. This is comes in handy when analyzing jump instructions, conditional jumps, function calls, etc. This additional information can be turned off by commenting out line 10 in `src/parser.cpp` - `#define PRINT_ADDRESSES`.
+The instructions into which the source code has been compiled look as shown below. The first column represents the 
+address of an instruction. This is comes in handy when analyzing jump instructions, conditional jumps, function 
+calls, etc. This additional information can be turned off by commenting out line 10 in `src/parser.cpp` - `#define PRINT_ADDRESSES`.
 
 ```
 [#000] INC 0 5
@@ -280,7 +287,7 @@ On the left-hand side, we can see the instruction that's currently being execute
 
 ## Grammar
 
-A more formal way to define the way you should write a program in our programming language could be seen below.
+A more formal way to define how you should write a program in our programming language could be seen below.
 
 ```
 <program> --> 'START' <block> 'END'
@@ -409,7 +416,7 @@ int x, z, y, arr[2] = {1,2}, arr2[5];
 bool test1, correct, visited[1] = {true}, seen[N];
 ```
 
-When creating a variable, you are not allowed to initialize it right away. You have to do it through the `assignment` statements later on. However, when creating an array you are given the option to initialize it. If you decide to do so, you must provide literals for all elements.
+When creating a variable, you are not allowed to initialize it right away. You have to do it through the `assignment` statement later on. However, when creating an array you are given the option to initialize it. If you decide to do so, you must provide literals for all elements.
 
 ### Assignment
 
@@ -420,16 +427,17 @@ correct := false;
 ```
 
 Unlike declarations, you are obligated to use the `:=` character when assigning a value (expression) to a variable. 
-You should be able to combine integers and booleans as a boolean is internally represented as an integer of a value 
+You should be able to combine integers and booleans since boolean is internally represented as an integer of a value 
 of zero or one.
 
 ### Basic arithmetic and logic
 
 For this part we were strongly inspired by the PL0 programming language as described in its grammar over at https://en.wikipedia.org/wiki/PL/0.
 
-We provide basic arithmetic operations such as `+`, `-`, `*`, and `/`. You should be able to use any variables, constants or literals you want. You can also include the `instanceof` operator into an expression. Technically, the instanceof operator represents nothing but a boolean value (true/false - 1/0).
+We provide basic arithmetic operations such as `+`, `-`, `*`, and `/`. You should be able to use any variables, 
+constants, or literals you want. You can also include the `instanceof` operator into an expression. Technically, the instanceof operator represents nothing but a boolean value (true/false - 1/0).
 
-As far as conditions and simple logic are concerned, we provide the following:
+As far as conditions and simple logic are concerned, we support the following:
 
 ```
 ! <expression>
@@ -490,8 +498,8 @@ function foo() {
 
 call foo();
 ```
-There aren't any parameters being passed into the function nor any return values. Hence, every function is 
-technically a void function that returns no parameters. As shown below, we do allow nested functions.
+There aren't any parameters being passed into a function nor any return values. Hence, every function is 
+technically a void function that returns no values. As shown below, we do allow nested functions.
 
 ```
 START
@@ -549,7 +557,7 @@ repeat {{
 ### Foreach loop
 
 A `foreach` loop is meant to be used to iterate over the elements of an array. All the user is supposed to do, is to declare a variable into which the elements will be copied as we go over the array.
-Internally, it creates a temporary index variable on the stack, so we can keep track of the index of the current elements.
+Internally, it creates a temporary index variable on the stack, so we can keep track of the index of the current element.
 
 ```
 START
@@ -566,7 +574,8 @@ END
 
 ### Else branch of an if statement
 
-An `else` statement allows branching off based on the result of the condition evaluated in the if statement. Within an else statement we can again use an if statement.
+An `else` statement allows branching off based on the result of the condition evaluated in the if statement. Within 
+an else statement, we can use an if statement again.
 
 ```
 START
@@ -623,14 +632,20 @@ switch(x) {
         break;
 }
 ```
-Only a variable can be passed into a switch statements - either an integer or a boolean. Internally, we keep jumping over cases until we find one that matches the current value of the control variable. Then, we execute the body of the case. Each can may also contain a `break` instruction which causes immediate termination of the switch statements. If the control value is modified within the body of a case statements. Its new value will be used when searching for another case that matches the value. This, of course, will not take place if a break statements is present.
+Only a variable can be passed into a switch statements - either an integer or boolean. Internally, we keep jumping 
+over cases until we find one that matches the current value of the control variable. Then, we execute the body of 
+the case. Each case may also contain a `break` instruction which causes an immediate termination of the switch 
+statement.
+If the control value is modified within the body of a case statement, its new value will be used when searching for 
+another case that matches the value. This, of course, will not take place if a break statement is present.
 
 ### Multi-assignment (a = b = c = d = 3;)
 
-Within out programming language, we also supposed multi-assignment. The variables on the left side are supposed to be primitive data types - integers or booleans. This will not work with array elements. As in a normal assignment, you're required to use the `:=` character. After the very last variable, an expression must follow.
+Within our programming language, we also supposed multi-assignment. The variables on the left side are supposed to 
+be primitive data types - integers or booleans. This will not work with array elements. As in a normal assignment, you're required to use the `:=` character. After the very last variable, an expression must follow.
 
 ```
-a := d := b := c := ((((15 / 5) - 2/2)*5)/g[0/30])*(g instanceof );
+a := d := b := c := ((((15 / 5) - 2/2)*5)/g[0/30])*(g instanceof int);
 ```
 
 All variables a, d, b, c will be assigned the same value, which is the final result of the expression.
@@ -647,7 +662,8 @@ In order to distinguish between an assignment and a ternary operator, you must p
 
 ### Commands for input and output (read, write - needs appropriate instructions to be used)
 
-As for reading from the standard input and printing off to standard output. We chose to use a made up `SIO` instruction. 
+As for reading from the standard input and printing off to the standard output. We chose to use a made up `SIO` 
+instruction. 
 
 `SIO 0 1` will print the value on the top of the stack out to the standard output. Similarly, `SIO 0 2` will read an integer value form the standard input and place it on the top of the stack. Both instructions are supported by our virtual machine. 
 
@@ -699,7 +715,9 @@ The second example represents an infinite loop.
 
 ### Array and working with its elements
 
-As another datatype, or rather a collection, we decided to implement arrays. An array is statically allocated on the stack and can contain 1 or more elements. There are two kinds of arrays we support, an array of booleans and an array of integers. The user must specify the size of the array when upon declaration.
+As another datatype, or rather a collection, we decided to implement arrays. An array is statically allocated on the 
+stack and can contain 1 or more elements. There are two kinds of arrays we support, an array of booleans and an 
+array of integers. The user must specify the size of an array upon declaration.
 
 
 ```
@@ -724,7 +742,8 @@ int nodes[5] = {1,2,3,4,5};
 ### Instanceof operator
 
 The instanceof operator is used to find out if a variable is of a certain type or not. For instance, we can test 
-whether `x` is of a type `function`, `array`, `int`, or `bool`. The return value is always `true` or `false`, which is then interpreted as `1` or `0`.
+whether `x` is of a type of `function`, `array`, `int`, or `bool`. The return value is always `true` or `false`, which 
+is then interpreted as `1` or `0`.
 
 ```
 START
@@ -801,7 +820,8 @@ END
 
 Throughout the project, we mostly used object-oriented programming (OOP for short). The entire compiler consists of 
 three main parts. These are `Lexer`, which parses an input file into a stream of tokens, `Parser`, which carries out 
-the recursive descent algorithm on AST, and `VM` (virtual machine), which performs execution onto the generated code 
+the recursive descent algorithm down an AST, and `VM` (virtual machine), which performs execution onto the generated 
+code 
 (instructions written in PL0).
 
 ### UML diagram of the structure of the lexer
@@ -815,6 +835,22 @@ the recursive descent algorithm on AST, and `VM` (virtual machine), which perfor
 ### UML diagram of the structure of the VirtualMachine
 
 <img src="doc/uml-03.svg" width="450" height="350">
+
+## List of PL0 instructions
+
+| Instruction | Description                                                                                                                 |
+|-------------|:----------------------------------------------------------------------------------------------------------------------------|
+| LIT         | Pushes a constant on the top of the stack.                                                                                  |
+| OPR         | Performs an operation on the top of the stack.                                                                              |
+| LOD         | Loads a value from an address to the top of the stack.                                                                      |
+| STO         | Stores a value from the top of the stack to a particular address.                                                           |
+| CAL         | Calls a function.                                                                                                           |
+| INC         | Allocates 'x' positions (slots/variables) on the stack.                                                                     |
+| JMP         | Jumps to an address.                                                                                                        |
+| JPC         | Conditional jump. It jumps if there is a 1 on the top of the stack (result of an operation).                                |
+| SIO         | System I/O operation (read/write).                                                                                          |
+| LDA         | Loads data on the top of the stack from an address which is stored on the top of the stack.                                 |
+| STA         | Stores the value which is on the top of the stack at the address which is at the second position from the top of the stack. |
 
 ## Conclusion
 
