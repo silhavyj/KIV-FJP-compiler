@@ -1,0 +1,99 @@
+/*
+    A very simple calculator
+
+    desc: The user keeps inputting numbers. For example,
+          15 1 15 2 5 where every other number represents one
+          type of an operation.
+
+    operations: 1 --> '+'
+                2 --> '-'
+                3 --> '*'
+                4 --> '/'
+
+    Therefore, the sequence above represents the following expression
+    15 + 15 - 5. The results of the expression are being printed out
+    as the user enters new values. The program is terminated by an
+    invalid operation.
+*/
+
+START
+
+int op, x, y;
+bool done;
+
+function calculate() {
+
+    function add() { x := x + y; }
+
+    function sub() { x := x - y; }
+
+    /* Multiplication is implemented through addition */
+    function mult() {
+        int c;
+        {
+            c := y - 1;
+            y := x;
+
+            while (c > 0) {
+                call add();
+                c := c - 1;
+            }
+        }
+    }
+
+    /* If the user attempts to divide by 0, the program will terminate */
+    function div() {
+        if (y != 0) {
+            x := x / y;
+        } else
+            done := true;
+    }
+
+    {
+        done := true;
+        switch (op) {
+            case 1: {
+                    done := false;
+                    call add();
+                }
+                break;
+            case 2: {
+                    done := false;
+                    call sub();
+                }
+                break;
+            case 3: {
+                    done := false;
+                    call mult();
+                }
+                break;
+            case 4: {
+                    done := false;
+                    call div();
+                }
+                break;
+        }
+        if (done == false)
+            write(x);
+    }
+}
+{
+    done := false;
+    read(x);
+    while (done == false) {
+        read(op);
+
+        if (op < 1)
+            done := true;
+        else {
+            if (op > 4)
+                done := true;
+        }
+
+        if (done == false) {
+            read(y);
+            call calculate();
+        }
+    }
+}
+END
