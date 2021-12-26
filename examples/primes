@@ -12,9 +12,11 @@ function isPrime() {
             if (arg / i * i == arg) {
                 ret := 0;
                 i := arg;
+                goto exit;
             }
             i := i + 1;
         }
+        exit:
     }
 }
 
