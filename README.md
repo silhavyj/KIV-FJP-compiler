@@ -39,7 +39,9 @@
   * [UML diagram of the structure of the lexer](#uml-diagram-of-the-structure-of-the-lexer)
   * [UML diagram of the structure of the parser](#uml-diagram-of-the-structure-of-the-parser)
   * [UML diagram of the structure of the VirtualMachine](#uml-diagram-of-the-structure-of-the-virtualmachine)
+- [List of PL0 instructions](#list-of-pl0-instructions)
 - [Conclusion](#conclusion)
+
 ## Introduction
 
 Within this module, we decided to implement a compiler for a **programming language of our own**. The syntax of our 
@@ -329,8 +331,17 @@ A more formal way to define how you should write a program in our programming la
 <foreach> --> 'foreach' '(' <ident> : <ident_array> ')' <statement>
 <switch> --> 'switch' '(' <ident> ')' '{' <case>* '}'
 <case> --> 'case' ( <num> | <boo_val> ) ':' <statement> ('break' ';')?
-<read> --> 'read' '(' <ident> ')' ';'
-<write> --> 'write' '(' <ident> ')' ';'
+<read> --> 'read' '(' <ident> ')' ';' | 'read' '(' <ident> '[' <expression> ']' ')' ';'
+<write> --> 'write' '(' <ident> ')' ';' |  'write' '(' <ident> '[' <expression> ']' ')' ';'
+
+<condition> --> ! <expression> | <expression> == <expression> || <expression> != <expression> | <expression> <
+<expression> | <expression> <= <expression> | <expression> > <expression> | <expression> >= <expression> | <expression>
+&& <expression> | <expression> || <expression>
+<expression> --> ('+' | '-')? <term> ( ('+' | '-') <term> )
+<term> --> <factor> { ('*' | '/') <factor> }
+<factor> --> <ident> | <num> | <boo_val> | '(' <expression> ')' | <instanceof> | <ident> '[' <expression> ']'
+<instanceof> --> <ident> 'instanceof' 'int' | <ident> 'instanceof' 'bool' | <ident> 'instanceof' 'int[]' | <ident>
+'instanceof' 'bool[]' | <ident> 'instanceof' 'function'
 ```
 
 ## Supported features

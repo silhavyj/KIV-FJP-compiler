@@ -37,5 +37,14 @@
 <foreach> --> 'foreach' '(' <ident> : <ident_array> ')' <statement>
 <switch> --> 'switch' '(' <ident> ')' '{' <case>* '}'
 <case> --> 'case' ( <num> | <boo_val> ) ':' <statement> ('break' ';')?
-<read> --> 'read' '(' <ident> ')' ';'
-<write> --> 'write' '(' <ident> ')' ';'
+<read> --> 'read' '(' <ident> ')' ';' | 'read' '(' <ident> '[' <expression> ']' ')' ';'
+<write> --> 'write' '(' <ident> ')' ';' |  'write' '(' <ident> '[' <expression> ']' ')' ';'
+
+<condition> --> ! <expression> | <expression> == <expression> || <expression> != <expression> | <expression> <
+<expression> | <expression> <= <expression> | <expression> > <expression> | <expression> >= <expression> | <expression>
+&& <expression> | <expression> || <expression>
+<expression> --> ('+' | '-')? <term> ( ('+' | '-') <term> )
+<term> --> <factor> { ('*' | '/') <factor> }
+<factor> --> <ident> | <num> | <boo_val> | '(' <expression> ')' | <instanceof> | <ident> '[' <expression> ']'
+<instanceof> --> <ident> 'instanceof' 'int' | <ident> 'instanceof' 'bool' | <ident> 'instanceof' 'int[]' | <ident>
+'instanceof' 'bool[]' | <ident> 'instanceof' 'function'
