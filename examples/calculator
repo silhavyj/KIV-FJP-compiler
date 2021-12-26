@@ -43,9 +43,9 @@ function calculate() {
 
     /* If the user attempts to divide by 0, the program will terminate */
     function div() {
-        if (y != 0) {
+        if (y != 0)
             x := x / y;
-        } else
+        else
             done := true;
     }
 
@@ -85,10 +85,8 @@ function calculate() {
 
         if (op < 1)
             done := true;
-        else {
-            if (op > 4)
-                done := true;
-        }
+        else if (op > 4)
+            done := true;
 
         if (done == false) {
             read(y);

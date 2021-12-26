@@ -437,27 +437,27 @@ void FJP::Parser::processStatement() {
         token = lexer->getNextToken();
         return;
     }
-    processAssignment();
-    processCall();
-    processScope();
-    processIf();
-    processWhile();
-    processDoWhile();
-    processFor();
-    processRepeatUntil();
-    processForeach();
-    processSwitch();
-    processGoto();
-    processRead();
-    processWrite();
+    if (processAssignment())  return;
+    if (processCall())        return;
+    if (processScope())       return;
+    if (processIf())          return;
+    if (processWhile())       return;
+    if (processDoWhile())     return;
+    if (processFor())         return;
+    if (processRepeatUntil()) return;
+    if (processForeach())     return;
+    if (processSwitch())      return;
+    if (processGoto())        return;
+    if (processRead())        return;
+    if (processWrite())       return;
 }
 
 // <identifier> := <expression>;
 // <identifier> := <identifier> := <identifier> := <expression>;
-void FJP::Parser::processAssignment(bool expectSemicolon) {
+bool FJP::Parser::processAssignment(bool expectSemicolon) {
     // <identifier>
     if (token.tokenType != FJP::TokenType::IDENTIFIER) {
-        return;
+        return false;
     }
 
     // Make sure the identifier exists in the symbol table. If it's not found,
@@ -466,8 +466,7 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
     FJP::Symbol variable = symbolTable.findSymbol(token.value);
     if (variable.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
         // Process the label and return the function.
-        processLabel(token.value);
-        return;
+        return processLabel(token.value);
     }
 
     bool isAnotherAssign = true;
@@ -572,10 +571,11 @@ void FJP::Parser::processAssignment(bool expectSemicolon) {
         // Load up the next token, so it can be processed.
         token = lexer->getNextToken();
     }
+    return true;
 }
 
 // <identifier> :
-void FJP::Parser::processLabel(const std::string label) {
+bool FJP::Parser::processLabel(const std::string label) {
     // We don't have to check if the name is already taken as it was done above.
     symbolTable.addSymbol({FJP::SymbolType::SYMBOL_LABEL, label, 0, 0, generatedCode.getSize(), 0});
 
@@ -596,13 +596,14 @@ void FJP::Parser::processLabel(const std::string label) {
     }
     // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
+    return true;
 }
 
 // call <identifier>();
-void FJP::Parser::processCall() {
+bool FJP::Parser::processCall() {
     // 'call'
     if (token.tokenType != FJP::TokenType::CALL) {
-        return;
+        return false;
     }
 
     // <identifier>
@@ -642,13 +643,14 @@ void FJP::Parser::processCall() {
 
     // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
+    return true;
 }
 
 // { <statement>* }
-void FJP::Parser::processScope() {
+bool FJP::Parser::processScope() {
     // '{'
     if (token.tokenType != FJP::TokenType::LEFT_CURLY_BRACKET) {
-        return;
+        return false;
     }
     token = lexer->getNextToken();
     do {
@@ -658,14 +660,15 @@ void FJP::Parser::processScope() {
 
     // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
+    return true;
 }
 
 // if ( <condition> ) <statement>
 // if ( <condition> ) <statement> else <statement>
-void FJP::Parser::processIf() {
+bool FJP::Parser::processIf() {
     // 'if'
     if (token.tokenType != TokenType::IF) {
-        return;
+        return false;
     }
 
     // '('
@@ -712,13 +715,14 @@ void FJP::Parser::processIf() {
         // Set the address of the JPC instruction - skip the body of the if statement.
         generatedCode[currentInstruction1].m = generatedCode.getSize();
     }
+    return true;
 }
 
 // while ( <condition> ) <statement>
-void FJP::Parser::processWhile() {
+bool FJP::Parser::processWhile() {
     // while
     if (token.tokenType != FJP::TokenType::WHILE) {
-        return;
+        return false;
     }
 
     // Start address of the while loop.
@@ -753,13 +757,14 @@ void FJP::Parser::processWhile() {
 
     // Set the target jump address of the JPC instruction (in order to skip the body of the loop).
     generatedCode[endOfWhileCondition].m = generatedCode.getSize();
+    return true;
 }
 
 // do { <statement> } while ( <condition> );
-void FJP::Parser::processDoWhile() {
+bool FJP::Parser::processDoWhile() {
     // do
     if (token.tokenType != FJP::TokenType::DO) {
-        return;
+        return false;
     }
     // Start address of the body of the do-while loop.
     int doWhileStart = generatedCode.getSize();
@@ -814,13 +819,14 @@ void FJP::Parser::processDoWhile() {
 
     // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
+    return true;
 }
 
 // repeat <statement> until ( <condition> );
-void FJP::Parser::processRepeatUntil() {
+bool FJP::Parser::processRepeatUntil() {
     // repeat
     if (token.tokenType != FJP::TokenType::REPEAT) {
-        return;
+        return false;
     }
 
     // Start address of the body of the repeat-until loop.
@@ -874,13 +880,14 @@ void FJP::Parser::processRepeatUntil() {
 
     // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
+    return true;
 }
 
 // foreach (<identifier> : <identifier) <statement>
-void FJP::Parser::processForeach() {
+bool FJP::Parser::processForeach() {
     // foreach
     if (token.tokenType != FJP::TokenType::FOREACH) {
-        return;
+        return false;
     }
 
     // '('
@@ -1003,13 +1010,14 @@ void FJP::Parser::processForeach() {
 
     // Remove the temporary variable (index) off the stack.
     generatedCode.addInstruction({FJP::OP_CODE::INC, 0, -1});
+    return true;
 }
 
 // for ( <assignment> ; <condition> ; <assignment> ) <statement>
-void FJP::Parser::processFor() {
+bool FJP::Parser::processFor() {
     // for
     if (token.tokenType != FJP::TokenType::FOR) {
-        return;
+        return false;
     }
 
     // '('
@@ -1070,17 +1078,18 @@ void FJP::Parser::processFor() {
 
     // Set the address to jump to after the condition has been processed (the body of the for loop).
     generatedCode[startUpdatePart - 1].m = endUpdatePart;
+    return true;
 }
 
 // switch ( <identifier> ) { <cases> }
-void FJP::Parser::processSwitch() {
+bool FJP::Parser::processSwitch() {
     // List of the address of break statements that will need to be set
     // once the end address is known (the end of the switch statement).
     std::list<int> breaks;
 
     // switch
     if (token.tokenType != FJP::TokenType::SWITCH) {
-        return;
+        return false;
     }
 
     // '('
@@ -1130,6 +1139,7 @@ void FJP::Parser::processSwitch() {
 
     // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
+    return true;
 }
 
 
@@ -1209,10 +1219,10 @@ void FJP::Parser::processCases(Symbol &variable, std::list<int> &breaks) {
 }
 
 // goto <identifier> ;
-void FJP::Parser::processGoto() {
+bool FJP::Parser::processGoto() {
     // goto
     if (token.tokenType != FJP::TokenType::GOTO) {
-        return;
+        return false;
     }
 
     // <identifier>
@@ -1244,6 +1254,7 @@ void FJP::Parser::processGoto() {
 
     // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
+    return true;
 }
 
 // ! <expression>
@@ -1575,10 +1586,10 @@ void FJP::Parser::processFactor() {
     }
 }
 
-void FJP::Parser::processRead() {
+bool FJP::Parser::processRead() {
     // 'read'
     if (token.tokenType != FJP::TokenType::READ) {
-        return;
+        return false;
     }
 
     // '('
@@ -1663,12 +1674,13 @@ void FJP::Parser::processRead() {
 
     // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
+    return true;
 }
 
-void FJP::Parser::processWrite() {
+bool FJP::Parser::processWrite() {
     // 'write'
     if (token.tokenType != FJP::TokenType::WRITE) {
-        return;
+        return false;
     }
 
     // '('
@@ -1762,4 +1774,5 @@ void FJP::Parser::processWrite() {
 
     // Load up the next token, so it can be processed.
     token = lexer->getNextToken();
+    return true;
 }

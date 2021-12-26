@@ -89,40 +89,40 @@ namespace FJP {
 
         /// Processes an 'assignment' (recursive descent).
         /// \param expectSemicolon flag saying if there should a semicolon at the end of the assignment
-        void processAssignment(bool expectSemicolon = true);
+        bool processAssignment(bool expectSemicolon = true);
 
         /// Processes an 'expression' (recursive descent).
         void processExpression();
 
         /// Processes a 'call' (recursive descent).
-        void processCall();
+        bool processCall();
 
         /// Processes a 'scope' (recursive descent).
-        void processScope();
+        bool processScope();
 
         /// Processes an 'if' statement (recursive descent).
-        void processIf();
+        bool processIf();
 
         /// Processes a 'condition' (recursive descent).
         void processCondition();
 
         /// Processes a 'while' loop (recursive descent).
-        void processWhile();
+        bool processWhile();
 
         /// Processes a 'do-while' loop (recursive descent).
-        void processDoWhile();
+        bool processDoWhile();
 
         /// Processes a 'for' loop (recursive descent).
-        void processFor();
+        bool processFor();
 
         /// Processes a 'repeat-until' loop (recursive descent).
-        void processRepeatUntil();
+        bool processRepeatUntil();
 
         /// Processes a 'foreach' loop (recursive descent).
-        void processForeach();
+        bool processForeach();
 
         /// Processes a 'switch' statement (recursive descent).
-        void processSwitch();
+        bool processSwitch();
 
         /// Processes a 'ternary operator' (recursive descent).
         void processTernaryOperator();
@@ -134,10 +134,10 @@ namespace FJP {
 
         /// Processes a 'label' (recursive descent).
         /// \param label name of the label (used in goto)
-        void processLabel(const std::string label);
+        bool processLabel(const std::string label);
 
         /// Processes a 'goto' statement (recursive descent).
-        void processGoto();
+        bool processGoto();
 
         /// Processes a 'term' (recursive descent).
         void processTerm();
@@ -146,10 +146,10 @@ namespace FJP {
         void processFactor();
 
         /// Processes a 'read' operation (recursive descent).
-        void processRead();
+        bool processRead();
 
         /// Processes a 'write' operation (recursive descent).
-        void processWrite();
+        bool processWrite();
 
     public:
         /// Return the instance of the class.
