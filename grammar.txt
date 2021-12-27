@@ -40,7 +40,7 @@
 <read> --> 'read' '(' <ident> ')' ';' | 'read' '(' <ident> '[' <expression> ']' ')' ';'
 <write> --> 'write' '(' <ident> ')' ';' |  'write' '(' <ident> '[' <expression> ']' ')' ';'
 
-<condition> --> ! <expression> | <expression> == <expression> || <expression> != <expression> | <expression> <
+<condition> --> ! <expression> | <expression> == <expression> || <expression> != <expression> | <expression>
 <expression> | <expression> <= <expression> | <expression> > <expression> | <expression> >= <expression> | <expression>
 && <expression> | <expression> || <expression>
 <expression> --> ('+' | '-')? <term> ( ('+' | '-') <term> )
