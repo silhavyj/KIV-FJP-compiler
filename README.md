@@ -4,7 +4,11 @@
 - [How to compile and run the application](#how-to-compile-and-run-the-application)
   * [Requirements](#requirements)
   * [Compilation](#compilation)
+    + [Compilation on Linux](#compilation-on-linux)
+    + [Compilation on Windows](#compilation-on-windows)
   * [Execution](#execution)
+    + [Execution on Linux](#execution-on-linux)
+    + [Execution on Windows](#execution-on-windows)
     + [Different options to run the application](#different-options-to-run-the-application)
 - [Debug outputs of the program](#debug-outputs-of-the-program)
   * [tokens.json](#tokensjson)
@@ -54,29 +58,49 @@ As for the programming language, in which the compiler was implemented, we decid
 
 ### Requirements
 
-The compilation is done through the `make` command that is supposed to be executed in the root folder of the project structure. If you are on Linux, you can install make using this command `sudo apt-get install build-essential`. Alternatively, if you are on Windows, the simplest way to install make is using the `chocolatey` package manager - `choco install make` (https://chocolatey.org/install).
+Since we did not want to be limited by the Linux platform, we used the `cmake` tool (https://cmake.org/) to compile and build our application. In order to successfully build the application, you need to have `cmake` installed on your machine, whether it is Linux, Windows, or macOS. You need to make sure that you can execute the `cmake` command from your terminal. If you are on Windows, you may need to add the path to `cmake` into your environment variables.
 
 ### Compilation
 
-After you have installed `make` on your machine, all you are required to do is to navigate into the root folder of the project structure and run `make` in your terminal. This approach should work for both Windows and Linux.
+#### Compilation on Linux
+
+If you are on Linux, all you are required to do is to navigate into the root folder of the project structure and execute the following commands in the terminal.
+
+The first command makes the file executable, and the second command builds the whole application.
 
 ```
-make
+chmod +x build.sh
 ```
 
-Similarly, if you want to clean everything, you can simply type `make clean`.
-
 ```
-make clean
+./build.sh
 ```
 
-This will erase all files that were created upon successful compilation. Furthermore, it will also delete all files created by the application itself (if run with the `--debug` option).
+#### Compilation on Windows
+
+If you are on Windows, the process of building the application is quite similar to the Linux one. All you need to do is to navigate into the root folder of the project structure and execute the following command in the command line.
+
+```
+build.bat
+```
 
 ### Execution
 
-Upon successful compilation, there should be a file called `fjp` or `fjp.exe`, depending on your operating system, created in the same folder from which you executed the `make` command. 
+Upon successful compilation, a `build` folder should be created containing a `fjp` file, which represents the executable application.
 
-After you run the application, you should be prompted with the following output.
+#### Execution on Linux
+
+```
+./fjp
+```
+
+#### Execution on Windows
+
+```
+fjp.exe
+```
+
+After executing one of the commands listed above (depending on your operating system) you should be prompted with the following output.
 
 ```
 ERR: Input file is not specified!
