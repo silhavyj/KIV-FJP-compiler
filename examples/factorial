@@ -1,3 +1,8 @@
+/*
+   This program reads a number from the standard
+   input a calculates its factorial.
+*/
+
 START
 int n, f;
 

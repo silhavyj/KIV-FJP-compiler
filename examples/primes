@@ -1,3 +1,8 @@
+/*
+    This program prints out all prime numbers
+    in between numbers 1 and 100.
+*/
+
 START
 const int MAX = 100;
 int arg, ret;
