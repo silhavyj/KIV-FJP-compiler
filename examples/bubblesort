@@ -1,0 +1,32 @@
+/*
+    Bubble sort algorithm.
+    INPUT: n - integer <0; 29>
+           a1, a2, a3, ..., an - elements to sort
+    OUTPUT: sorted sequence of the input numbers
+            in ascending order
+*/
+
+START
+const int N = 30;
+int n, arr[N];
+int i, j, tmp;
+
+{
+    read(n);
+
+    for (i := 0; i < n; i := i + 1)
+        read(arr[i]);
+
+    for (i := 0; i < n - 1; i := i + 1) {
+        for (j := 1; j < n - i; j := j + 1)
+            if (arr[j-1] > arr[j]) {
+                tmp := arr[j-1];
+                arr[j-1] := arr[j];
+                arr[j] := tmp;
+            }
+    }
+
+    for (i := 0; i < n; i := i + 1)
+        write(arr[i]);
+}
+END
