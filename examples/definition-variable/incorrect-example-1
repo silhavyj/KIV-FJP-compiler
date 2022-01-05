@@ -1,0 +1,9 @@
+/*
+    Error - Variable value can not be assigment in definition.
+*/
+START
+
+int number := 10;
+write(number);
+
+END

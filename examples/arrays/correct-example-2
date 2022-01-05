@@ -1,3 +1,6 @@
+/*
+    Assign value to array element using expression
+*/
 START
 int arr[2] = {110, 111};
 {

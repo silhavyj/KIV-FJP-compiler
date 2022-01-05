@@ -1,0 +1,7 @@
+/*
+    Missing size of array
+*/
+START
+int i, x[] = {11,12,13};
+
+END

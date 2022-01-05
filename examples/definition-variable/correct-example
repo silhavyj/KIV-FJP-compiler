@@ -1,0 +1,11 @@
+/*
+    Same for boolean values, but values are only true and false
+*/
+
+START
+int number;
+{
+number := 10;
+write(number);
+}
+END

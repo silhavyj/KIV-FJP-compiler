@@ -1,0 +1,10 @@
+/*
+    Error - Symbol for set value to variable is ':='
+*/
+START
+int number;
+{
+number = 10;
+write(number);
+}
+END

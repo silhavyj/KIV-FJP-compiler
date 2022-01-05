@@ -1,0 +1,12 @@
+/*
+    Same for boolean values, but values are only true and false
+*/
+
+START
+const int NUMBER = 10;
+const int N = 15;
+{
+write(NUMBER);
+write(N);
+}
+END

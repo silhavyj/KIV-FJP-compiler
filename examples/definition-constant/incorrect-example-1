@@ -1,0 +1,9 @@
+/*
+    Error - Constant must initialize in definition
+*/
+START
+const int NUMBER;
+{
+write(NUMBER);
+}
+END
