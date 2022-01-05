@@ -1,0 +1,12 @@
+/*
+    Missing init part of for loop
+*/
+START
+int j;
+{
+    j := 1;
+    for(; j <= 10; j := j + 1) {
+        write(j);
+    }
+}
+END

@@ -1,0 +1,13 @@
+/*
+    Repeat until loop example - print numbers until condition is true
+*/
+START
+int a;
+{
+    a := 1;
+    repeat {{
+        write(a);
+        a := a + 1;
+    }} until (12 && 2);
+}
+END

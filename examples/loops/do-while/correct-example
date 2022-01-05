@@ -1,0 +1,14 @@
+/*
+    Do-While loop example - print numbers from 1 to 10
+*/
+START
+const int N = 10;
+int counter;
+{
+    counter := 0;
+    do {{
+        counter := counter + 1;
+        write(counter);
+    }} while (counter != N);
+}
+END

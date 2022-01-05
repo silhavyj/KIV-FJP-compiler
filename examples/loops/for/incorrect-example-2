@@ -1,0 +1,11 @@
+/*
+    Missing condition part of for loop
+*/
+START
+int j;
+{
+    for(j := 1; ; j := j + 1;) {
+        write(j);
+    }
+}
+END

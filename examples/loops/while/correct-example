@@ -1,0 +1,13 @@
+/*
+    While loop example - print numbers from 1 to 10
+*/
+START
+int a;
+{
+    a := 1;
+    while(a <= 10) {
+        write(a);
+        a := a + 1;
+    }
+}
+END

@@ -1,0 +1,13 @@
+/*
+    Missing condition
+*/
+START
+int a;
+{
+    a := 1;
+    while() {
+        write(a);
+        a := a + 1;
+    }
+}
+END

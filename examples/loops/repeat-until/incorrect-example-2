@@ -1,0 +1,13 @@
+/*
+    Wrong condition
+*/
+START
+int a;
+{
+    a := 1;
+    repeat {{
+        write(a);
+        a := a + 1;
+    }} until (123);
+}
+END

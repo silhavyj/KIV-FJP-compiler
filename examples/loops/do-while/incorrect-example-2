@@ -1,0 +1,17 @@
+/*
+    Missing condition in do-while loop
+*/
+START
+const int N = 10;
+int counter;
+{
+    counter := 0;
+    do {{
+        counter := counter + 1;
+        write(counter);
+    /*
+        Missing condition
+    */
+    }} while;
+}
+END

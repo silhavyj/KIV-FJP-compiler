@@ -1,3 +1,6 @@
+/*
+    While foreach example - print last number in array
+*/
 START
 const int N = 3;
 int i, x[N] = {11,12,13};

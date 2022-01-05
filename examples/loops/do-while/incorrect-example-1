@@ -1,0 +1,20 @@
+/*
+    Do part of do-while loop must be in twice '{{' '}}' to correct behavior
+*/
+START
+const int N = 10;
+int counter;
+{
+    counter := 0;
+    /*
+        Missing second symbol '{'
+    */
+    do {
+        counter := counter + 1;
+        write(counter);
+    /*
+        Missing second symbol '}'
+    */
+    } while (counter != N);
+}
+END

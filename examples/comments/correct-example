@@ -6,6 +6,8 @@ int a;
 /*
     This is second comment
 */
+{
 a := 1;
 write(a);
+}
 END

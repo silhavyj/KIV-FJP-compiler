@@ -1,0 +1,13 @@
+/*
+    While foreach example - print numbers in array
+*/
+START
+const int N = 3;
+int i, x[N] = {11,12,13};
+
+{
+    foreach (i : x) {
+        write(i);
+    }
+}
+END

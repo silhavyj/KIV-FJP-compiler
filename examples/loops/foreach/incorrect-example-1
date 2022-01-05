@@ -1,0 +1,13 @@
+/*
+    Unknown symbol i - must exist
+*/
+START
+const int N = 3;
+int x[N] = {11,12,13};
+
+{
+    foreach (i : x) {
+        write(i);
+    }
+}
+END
