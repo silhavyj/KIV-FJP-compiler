@@ -470,6 +470,9 @@ bool FJP::Parser::processAssignment(bool expectSemicolon) {
     }
 
     bool isAnotherAssign = true;
+    FJP::Symbol symbolIdentifier;
+    std::list<std::string> identifiers;
+
     switch (variable.symbolType) {
         // If the identifier is an integer or bool.
         case FJP::SymbolType::SYMBOL_INT:
@@ -482,31 +485,21 @@ bool FJP::Parser::processAssignment(bool expectSemicolon) {
             // <identifier>
             token = lexer->getNextToken();
             if (token.tokenType == FJP::TokenType::IDENTIFIER) {
-
-                // Check if the token two steps ahead is also an identifier. If it's
-                // not an identifier, it has to be treated as an expression.
-                // For example <identifier> := <identifier> or <identifier> := <identifier> + 55
-                token = lexer->getNextToken();
-                if (token.tokenType != FJP::TokenType::ASSIGN) {
-                    lexer->returnToPreviousToken();
-                    lexer->returnToPreviousToken();
-                    token = lexer->getNextToken();
-                    isAnotherAssign = false;
-                }
-                if (isAnotherAssign) {
-                    // Recursively process another assignment.
-                    processAssignment();
-
-                    // Copy the value from the previous variable into the current one (chain of assignments).
-                    generatedCode.addInstruction({FJP::OP_CODE::LOD, lastProcessVariable.level, lastProcessVariable.address});
-                    if (variable.symbolType == FJP::SymbolType::SYMBOL_BOOL) {
-                        generatedCode.addInstruction({FJP::OP_CODE::LIT, 0, 0 });
-                        generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
+                while (true) {
+                    if (token.tokenType == FJP::TokenType::IDENTIFIER) {
+                        identifiers.push_back(token.value);
+                        token = lexer->getNextToken();
+                        if (token.tokenType != FJP::TokenType::ASSIGN) {
+                            lexer->returnToPreviousToken();
+                            break;
+                        } else {
+                            token = lexer->getNextToken();
+                        }
+                    } else {
+                        break;
                     }
-                    generatedCode.addInstruction({ FJP::OP_CODE::STO, symbolTable.getDepthLevel() - variable.level, variable.address });
                 }
             }
-
             // <expression>
             processExpression();
 
@@ -516,7 +509,18 @@ bool FJP::Parser::processAssignment(bool expectSemicolon) {
                 generatedCode.addInstruction({FJP::OP_CODE::OPR, 0, FJP::OPRType::OPR_NEQ });
             }
             generatedCode.addInstruction({ FJP::OP_CODE::STO, symbolTable.getDepthLevel() - variable.level, variable.address });
-            lastProcessVariable = variable;
+
+            for (const auto &identifier : identifiers) {
+                symbolIdentifier = symbolTable.findSymbol(identifier);
+                if (symbolIdentifier.symbolType == FJP::SymbolType::SYMBOL_NOT_FOUND) {
+                    FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_45, ERR_CODE, token.lineNumber);
+                }
+                if (symbolIdentifier.symbolType != variable.symbolType) {
+                    FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_29, ERR_CODE, token.lineNumber);
+                }
+                generatedCode.addInstruction({ FJP::OP_CODE::LOD, symbolTable.getDepthLevel() - variable.level,variable.address });
+                generatedCode.addInstruction({ FJP::OP_CODE::STO, symbolTable.getDepthLevel() - symbolIdentifier.level, symbolIdentifier.address });
+            }
             break;
 
         // If the symbol is an array.

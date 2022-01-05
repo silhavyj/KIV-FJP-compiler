@@ -56,9 +56,6 @@ namespace FJP {
         /// Their address is not yet known.
         std::map<std::string, std::list<int>> undefinedLabels;
 
-        /// Last processed variable - used in multi assignment.
-        FJP::Symbol lastProcessVariable;
-
     private:
         /// Constructor - creates an instance of the class.
         Parser();
