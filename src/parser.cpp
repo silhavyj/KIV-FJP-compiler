@@ -471,6 +471,7 @@ bool FJP::Parser::processAssignment(bool expectSemicolon) {
 
     bool isAnotherAssign = true;
     FJP::Symbol symbolIdentifier;
+    std::string identifierName;
     std::list<std::string> identifiers;
 
     switch (variable.symbolType) {
@@ -487,12 +488,15 @@ bool FJP::Parser::processAssignment(bool expectSemicolon) {
             if (token.tokenType == FJP::TokenType::IDENTIFIER) {
                 while (true) {
                     if (token.tokenType == FJP::TokenType::IDENTIFIER) {
-                        identifiers.push_back(token.value);
+                        identifierName = token.value;
                         token = lexer->getNextToken();
                         if (token.tokenType != FJP::TokenType::ASSIGN) {
                             lexer->returnToPreviousToken();
+                            lexer->returnToPreviousToken();
+                            token = lexer->getNextToken();
                             break;
                         } else {
+                            identifiers.push_back(identifierName);
                             token = lexer->getNextToken();
                         }
                     } else {
