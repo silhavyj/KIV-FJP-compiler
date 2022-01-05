@@ -1,0 +1,5 @@
+START
+int a; // One line comment not supported
+a := 1;
+write(a);
+END

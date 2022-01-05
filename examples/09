@@ -1,8 +1,0 @@
-START
-{
-    if (1 && true) write(1);
-    if (false || 0) write(2);
-    if (false || -12) write(3);
-    if (!false) write(4);
-}
-END

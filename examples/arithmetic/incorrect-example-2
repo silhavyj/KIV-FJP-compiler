@@ -1,0 +1,12 @@
+/*
+    Invalid arithmetic expression
+    Cant be symbol '-' twice next to each other
+*/
+
+START
+bool a;
+{
+a := 1 -- 2 / 2;
+write(a);
+}
+END

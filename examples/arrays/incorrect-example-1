@@ -1,0 +1,13 @@
+/*
+    Array is not fully initialized
+*/
+START
+const int N = 6;
+int i, x[N] = {11,12,13};
+
+{
+    foreach (i : x) {
+        write(i);
+    }
+}
+END

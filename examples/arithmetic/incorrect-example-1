@@ -1,0 +1,11 @@
+/*
+    Logic operators can be used only in conditions
+*/
+
+START
+bool a;
+{
+a := (true && (1 < 2)) || false;
+write(a);
+}
+END
