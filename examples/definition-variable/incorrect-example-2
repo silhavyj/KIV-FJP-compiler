@@ -1,0 +1,10 @@
+/*
+    Error - Missing '{' and '}' symbols on 6 and 9 line.
+*/
+START
+int number;
+
+number := 10;
+write(number);
+
+END

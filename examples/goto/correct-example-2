@@ -4,7 +4,7 @@ bool b;
 
 {
     goto label;
-    b := a instanceof bool[];
+    b := a instanceof int[];
     label:
     write(b);
 }

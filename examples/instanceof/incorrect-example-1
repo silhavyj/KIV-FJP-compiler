@@ -1,0 +1,10 @@
+/*
+    Invalid instanceof type
+*/
+START
+int x, y[1];
+{
+    x := x instanceof something;
+    write(x);
+}
+END

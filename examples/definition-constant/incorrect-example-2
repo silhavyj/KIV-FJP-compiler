@@ -1,0 +1,9 @@
+/*
+    Error - Assigns symbol for constants is '=' not ':='
+*/
+START
+const int NUMBER := 10;
+{
+write(NUMBER);
+}
+END

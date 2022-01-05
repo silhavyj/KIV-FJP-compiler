@@ -1,0 +1,20 @@
+/*
+    Expect literal after 'case' keyword
+*/
+
+START
+int x, y, z;
+{
+    x := 0;
+    y := 0;
+    z := 1;
+    switch(x) {
+        case y:
+            x:=15;
+            break;
+        case z:
+            x:=2;
+            break;
+    }
+}
+END
