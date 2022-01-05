@@ -1,3 +1,7 @@
+/*
+    Initialize array of booleans and print them into console
+*/
+
 START
 const int N = 3;
 function test() {

@@ -1,0 +1,13 @@
+/*
+    Undefined behavior - single else without if condition
+*/
+
+START
+bool was_inside_else;
+{
+    else {
+        was_inside_else := true;
+    }
+    write(was_inside_else);
+}
+END

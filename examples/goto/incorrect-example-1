@@ -1,0 +1,18 @@
+/*
+    Error - Jump into function
+*/
+START
+int x;
+
+function foo() {
+    {
+        loop:
+        x := 2;
+        write(x);
+    }
+}
+
+{
+goto loop;
+}
+END

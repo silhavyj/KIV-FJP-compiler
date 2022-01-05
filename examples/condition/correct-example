@@ -1,0 +1,24 @@
+/*
+    Examples of if-elseif-else condition
+*/
+
+START
+int a, b;
+bool is_greater, is_equals;
+{
+    a := 3;
+    b := 4;
+    if (a == b) {
+        is_equals := true;
+    } else {
+        is_equals := false;
+        if (a > 0) {
+            is_greater := true;
+        } else {
+            is_greater := false;
+        }
+    }
+    write(is_greater);
+    write(is_equals);
+}
+END
