@@ -81,7 +81,7 @@ chmod +x build.sh
 If you are on Windows, the process of building the application is quite similar to the Linux one. All you need to do is to navigate into the root folder of the project structure and execute the following command in the command line.
 
 ```
-build.bat
+.\build.bat
 ```
 
 ### Execution
@@ -97,7 +97,7 @@ Upon successful compilation, a `build` folder should be created containing a `fj
 #### Execution on Windows
 
 ```
-fjp.exe
+.\fjp.exe
 ```
 
 After executing one of the commands listed above (depending on your operating system) you should be prompted with the following output.

@@ -48,7 +48,7 @@ void FJP::Lexer::init(std::string filename, bool debug) {
 
     // Terminate the application if the input file cannot be open.
     std::ifstream file(filename);
-    if (file.is_open() == false) {
+    if (!file.is_open()) {
         FJP::exitProgramWithError(FJP::IOErrors::ERROR_00, ERR_CODE);
     }
 
@@ -91,11 +91,11 @@ void FJP::Lexer::processAllTokens(bool debug) {
     std::ofstream outputJSONFile;
 
     // If the debug is on, create the output file (tokens.json)
-    if (debug == true) {
+    if (debug) {
         outputJSONFile = std::ofstream(OUTPUT_FILE);
 
         // If there's an error while opening the output file, terminate the application.
-        if (outputJSONFile.is_open() == false) {
+        if (!outputJSONFile.is_open()) {
             FJP::exitProgramWithError(FJP::IOErrors::ERROR_01, ERR_CODE);
         }
     }
@@ -103,7 +103,7 @@ void FJP::Lexer::processAllTokens(bool debug) {
     // Parse the entire input file token by token.
     ss << "[";
     if (fileContent.size() > 0) {
-        while (isEndOfFile() == false) {
+        while (!isEndOfFile()) {
             token = parseNextToken();
             tokens.push_back(token);
             ss << token << ",\n";
@@ -114,7 +114,7 @@ void FJP::Lexer::processAllTokens(bool debug) {
 
     // If the debug flag is on, store all tokens into the output file.
     // The format of the output file is JSON.
-    if (debug == true) {
+    if (debug) {
         outputJSONFile << ss.str();
         outputJSONFile.close();
     }
@@ -141,13 +141,13 @@ FJP::Token FJP::Lexer::parseNextToken() {
         if (tokenValue == keyword.first) {
 
             // Move on by the keyword length in the input file.
-            currentCharIndex += tokenValue.length();
+            currentCharIndex += static_cast<long>(tokenValue.length());
 
             // Check if the keyword is not just a prefix of a custom
             // identifier such as a variable or an array.
             if (alphabetic_keywords.count(tokenValue)) {
                 if (currentCharIndex < static_cast<long>(fileContent.length()) && is_part_of_identifier(fileContent[currentCharIndex])) {
-                    currentCharIndex -= tokenValue.length();
+                    currentCharIndex -= static_cast<long>(tokenValue.length());
                     continue;
                 }
             }
@@ -213,7 +213,7 @@ FJP::Token FJP::Lexer::parseNextToken() {
 }
 
 std::string FJP::Lexer::getValue(int (validation_fce)(int)) {
-    std::string value = "";
+    std::string value;
 
     // Keep consuming the characters as long as the validation
     // function is satisfied.
@@ -265,7 +265,7 @@ void FJP::Lexer::skipComments() {
     // Keep counting open comments.
     int openComments = 1;
 
-    currentCharIndex += commentStart.length();
+    currentCharIndex += static_cast<long>(commentStart.length());
     while (openComments > 0) {
         // Skip all white spaces.
         skipWhiteCharacters();
@@ -282,10 +282,10 @@ void FJP::Lexer::skipComments() {
         // closing sequence, or neither.
         if (characterPair == commentStart) {
             openComments++;
-            currentCharIndex += commentStart.length();
+            currentCharIndex += static_cast<long>(commentStart.length());
         } else if (characterPair == commentEnd) {
             openComments--;
-            currentCharIndex += commentStart.length();
+            currentCharIndex += static_cast<long>(commentStart.length());
         } else {
             currentCharIndex++;
         }

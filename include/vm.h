@@ -171,9 +171,9 @@ namespace FJP {
         /// \return the instance of the class
         static VirtualMachine *getInstance();
 
-        /// Executes a program given as a parameter.
-        /// \param program the instance of a program to be executed
-        /// \param debug flag if want to create an output file - stacktrace.txt
-        void execute(FJP::GeneratedCode &program, bool debug = false) override;
+        /// Executes a program_code given as a parameter.
+        /// \param program_code the instance of a program_code to be executed
+        /// \param debug_mode flag if want to create an output file - stacktrace.txt
+        void execute(FJP::GeneratedCode &program_code, bool debug_mode = false) override;
     };
 }

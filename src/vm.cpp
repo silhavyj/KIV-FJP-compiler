@@ -16,16 +16,16 @@ FJP::VirtualMachine* FJP::VirtualMachine::getInstance() {
 FJP::VirtualMachine::VirtualMachine() {
 }
 
-void FJP::VirtualMachine::execute(FJP::GeneratedCode &program, bool debug) {
+void FJP::VirtualMachine::execute(FJP::GeneratedCode &program_code, bool debug_mode) {
     // Store the parameters.
-    this->debug = debug;
-    this->program = &program;
+    this->debug = debug_mode;
+    this->program = &program_code;
 
     // Init the virtual machine.
     init();
 
-    // If debug is enabled, open up the output file.
-    if (debug) {
+    // If debug_mode is enabled, open up the output file.
+    if (debug_mode) {
         outputFile = std::ofstream(OUTPUT_FILE);
         if (outputFile.is_open() == false) {
             FJP::exitProgramWithError(FJP::IOErrors::ERROR_01, ERROR_CODE);
@@ -36,13 +36,13 @@ void FJP::VirtualMachine::execute(FJP::GeneratedCode &program, bool debug) {
         outputFile << "initial values\t\t\t" << EIP << "\t" << EBP << "\t" << ESP << '\n';
     }
 
-    // Executes the program. Keep fetching and executing
+    // Executes the program_code. Keep fetching and executing
     // instructions until the vm gets halted.
     while (halt == 1 && EBP != 0) {
         fetch();
         execute();
     }
-    // Close up the output file if debug is enabled.
+    // Close up the output file if debug_mode is enabled.
     if (outputFile.is_open() == true) {
         outputFile.close();
     }

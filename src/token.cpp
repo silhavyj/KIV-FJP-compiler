@@ -35,7 +35,4 @@ std::string FJP::token_type_to_str(FJP::TokenType tokenType) {
         default:
             return "unknown"; // It should never get here
     }
-    // This is here just so the compiler does not complain about
-    // a missing return value at the end of the method.
-    return "unknown";
 }

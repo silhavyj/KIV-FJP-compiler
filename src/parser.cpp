@@ -25,21 +25,21 @@ FJP::Parser* FJP::Parser::getInstance() {
 FJP::Parser::Parser() : lexer(nullptr), nextFreeAddress(0) {
 }
 
-FJP::GeneratedCode FJP::Parser::parse(FJP::ILexer *lexer, bool debug) {
-    // Make sure that the lexer is not nullptr.
-    assert(lexer != nullptr);
+FJP::GeneratedCode FJP::Parser::parse(FJP::ILexer *i_lexer, bool debug) {
+    // Make sure that the i_lexer is not nullptr.
+    assert(i_lexer != nullptr);
 
-    this->lexer = lexer;
+    this->lexer = i_lexer;
     generatedCode = FJP::GeneratedCode();
 
     // START
-    token = lexer->getNextToken();
+    token = i_lexer->getNextToken();
     if (token.tokenType != FJP::TokenType::START) {
         FJP::exitProgramWithError(__FUNCTION__, FJP::CompilationErrors::ERROR_37, ERR_CODE, token.lineNumber);
     }
 
     // <block>
-    token = lexer->getNextToken();
+    token = i_lexer->getNextToken();
     processBlock();
 
     // END
@@ -469,7 +469,6 @@ bool FJP::Parser::processAssignment(bool expectSemicolon) {
         return processLabel(token.value);
     }
 
-    bool isAnotherAssign = true;
     FJP::Symbol symbolIdentifier;
     std::string identifierName;
     std::list<std::string> identifiers;
